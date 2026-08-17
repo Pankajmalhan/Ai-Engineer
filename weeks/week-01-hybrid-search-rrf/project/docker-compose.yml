@@ -1,0 +1,19 @@
+services:
+  db:
+    image: paradedb/paradedb:latest
+    environment:
+      POSTGRES_USER: hybrid
+      POSTGRES_PASSWORD: hybrid
+      POSTGRES_DB: hybrid_search
+    ports:
+      - "5433:5432"
+    volumes:
+      - paradedb_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hybrid -d hybrid_search"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  paradedb_data:
