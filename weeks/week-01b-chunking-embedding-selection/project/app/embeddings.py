@@ -52,14 +52,18 @@ MODEL_SPECS = {
 
 @lru_cache(maxsize=len(MODELS))
 def _model(model_name: str) -> SentenceTransformer:
-    return SentenceTransformer(model_name)
+    # device="cpu": ModernBERT's attention path deadlocks on Apple's MPS
+    # backend (forward pass hangs forever, Metal command queue idle, main
+    # thread parked on a mutex) -- not a download/auth issue. CPU is slower
+    # but actually completes; see the matching note in chunkers.py.
+    return SentenceTransformer(model_name, device="cpu")
 
 
 def embed_passages(texts: list[str], model_name: str) -> np.ndarray:
     spec = MODEL_SPECS[model_name]
     prefixed = [spec.passage_prefix + t for t in texts]
     return _model(model_name).encode(
-        prefixed, batch_size=32, show_progress_bar=False, normalize_embeddings=True
+        prefixed, batch_size=32, show_progress_bar=True, normalize_embeddings=True
     )
 
 

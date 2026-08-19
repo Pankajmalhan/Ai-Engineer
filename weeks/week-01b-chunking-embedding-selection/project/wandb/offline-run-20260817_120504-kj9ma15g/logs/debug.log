@@ -1,0 +1,20 @@
+2026-08-17 12:05:04,249 INFO    MainThread:62013 [wandb_init.py:setup_run_log_directory():739] Logging user logs to /Users/pankaj-admin/Documents/workspace/personal/ai-engineer-roadmap/weeks/week-01b-chunking-embedding-selection/project/wandb/offline-run-20260817_120504-kj9ma15g/logs/debug.log
+2026-08-17 12:05:04,255 INFO    MainThread:62013 [wandb_init.py:setup_run_log_directory():740] Logging internal logs to /Users/pankaj-admin/Documents/workspace/personal/ai-engineer-roadmap/weeks/week-01b-chunking-embedding-selection/project/wandb/offline-run-20260817_120504-kj9ma15g/logs/debug-internal.log
+2026-08-17 12:05:04,255 INFO    MainThread:62013 [wandb_init.py:init():783] calling init triggers
+2026-08-17 12:05:04,256 INFO    MainThread:62013 [wandb_init.py:init():788] wandb.init called with sweep_config: {}
+config: {'chunking_strategy': 'recursive', 'embedding_model': 'nomic-ai/modernbert-embed-base', 'part': 'strategy_comparison', '_wandb': {}}
+2026-08-17 12:05:04,256 INFO    MainThread:62013 [wandb_init.py:init():831] starting backend
+2026-08-17 12:05:04,257 INFO    MainThread:62013 [wandb_init.py:init():846] sending inform_init request
+2026-08-17 12:05:04,432 INFO    MainThread:62013 [wandb_init.py:init():851] backend started and connected
+2026-08-17 12:05:04,518 INFO    MainThread:62013 [wandb_init.py:init():921] updated telemetry
+2026-08-17 12:05:04,606 INFO    MainThread:62013 [wandb_init.py:init():944] communicating run to backend with 90.0 second timeout
+2026-08-17 12:05:04,619 INFO    MainThread:62013 [wandb_init.py:init():981] starting run threads in backend
+2026-08-17 12:05:04,719 INFO    MainThread:62013 [wandb_run.py:_console_start():2626] atexit reg
+2026-08-17 12:05:04,719 INFO    MainThread:62013 [wandb_run.py:_redirect():2476] redirect: wrap_raw
+2026-08-17 12:05:04,719 INFO    MainThread:62013 [wandb_run.py:_redirect():2545] Wrapping output streams.
+2026-08-17 12:05:04,720 INFO    MainThread:62013 [wandb_run.py:_redirect():2568] Redirects installed.
+2026-08-17 12:05:04,721 INFO    MainThread:62013 [wandb_init.py:init():1019] run started, returning control to user process
+2026-08-17 12:05:04,721 INFO    MainThread:62013 [wandb_run.py:_finish():2397] finishing run week-01b-chunking-embedding-selection/kj9ma15g
+2026-08-17 12:05:04,722 INFO    MainThread:62013 [wandb_run.py:_atexit_cleanup():2593] got exitcode: 0
+2026-08-17 12:05:04,722 INFO    MainThread:62013 [wandb_run.py:_restore():2575] restore
+2026-08-17 12:05:04,722 INFO    MainThread:62013 [wandb_run.py:_restore():2581] restore done

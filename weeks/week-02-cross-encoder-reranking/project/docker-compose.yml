@@ -1,0 +1,19 @@
+services:
+  db:
+    image: paradedb/paradedb:latest
+    environment:
+      POSTGRES_USER: rerank
+      POSTGRES_PASSWORD: rerank
+      POSTGRES_DB: rerank_bench
+    ports:
+      - "5434:5432"
+    volumes:
+      - rerank_bench_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rerank -d rerank_bench"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  rerank_bench_data:

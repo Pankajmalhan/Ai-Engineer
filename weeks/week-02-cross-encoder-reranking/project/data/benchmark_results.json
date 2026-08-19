@@ -1,0 +1,548 @@
+{
+  "rerank_pool_size": 25,
+  "final_top_k": 10,
+  "summary": {
+    "no-rerank (hybrid only)": {
+      "mean_ndcg_at_10": 0.9104743802857166,
+      "mean_recall_at_10": 0.96,
+      "mean_latency_ms": 0.013066480751149356
+    },
+    "cohere": {
+      "mean_ndcg_at_10": 0.98,
+      "mean_recall_at_10": 1.0,
+      "mean_latency_ms": 5859.480663359282
+    },
+    "bge-reranker-base": {
+      "mean_ndcg_at_10": 0.9452371901428583,
+      "mean_recall_at_10": 1.0,
+      "mean_latency_ms": 546.7345683992608
+    }
+  },
+  "per_query": [
+    {
+      "query": "app won't start after reboot",
+      "category": "semantic",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 0.0,
+          "recall_at_10": 0,
+          "latency_ms": 0.013415992725640535
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 760.2905000094324
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 0.5,
+          "recall_at_10": 1,
+          "latency_ms": 600.889167006244
+        }
+      }
+    },
+    {
+      "query": "excel file freezes the page when I try to upload it",
+      "category": "semantic",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 0.6309297535714575,
+          "recall_at_10": 1,
+          "latency_ms": 0.004250003257766366
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 5824.190250001266
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 334.49525000469293
+        }
+      }
+    },
+    {
+      "query": "app keeps crashing right after opening on my phone",
+      "category": "semantic",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 0.6309297535714575,
+          "recall_at_10": 1,
+          "latency_ms": 0.0056249991757795215
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 6292.6503750059055
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 682.2787080018315
+        }
+      }
+    },
+    {
+      "query": "got billed twice for my monthly plan",
+      "category": "semantic",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 0.5,
+          "recall_at_10": 1,
+          "latency_ms": 0.014000004739500582
+        },
+        "cohere": {
+          "ndcg_at_10": 0.5,
+          "recall_at_10": 1,
+          "latency_ms": 5960.612166993087
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 0.5,
+          "recall_at_10": 1,
+          "latency_ms": 476.5291670046281
+        }
+      }
+    },
+    {
+      "query": "printer keeps disconnecting from wifi",
+      "category": "semantic",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.01258301199413836
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 6184.193124994636
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 532.466916993144
+        }
+      }
+    },
+    {
+      "query": "can't log into the company wiki with my new account",
+      "category": "semantic",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.054750009439885616
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 6023.741291006445
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 541.2527919979766
+        }
+      }
+    },
+    {
+      "query": "my cart items disappeared when I came back to the site",
+      "category": "semantic",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.020415987819433212
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 6035.388165997574
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 333.42645899392664
+        }
+      }
+    },
+    {
+      "query": "sound cuts out when someone else joins the call",
+      "category": "semantic",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.004750007065013051
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 6338.386542003718
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 504.06024999392685
+        }
+      }
+    },
+    {
+      "query": "my smart thermostat lost all its settings after an update",
+      "category": "semantic",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.011667012586258352
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 6125.528249991476
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 755.4955420055194
+        }
+      }
+    },
+    {
+      "query": "filtering jobs by remote isn't changing the list",
+      "category": "semantic",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.009874987881630659
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 5862.0128340116935
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 689.0224170056172
+        }
+      }
+    },
+    {
+      "query": "ERRCONNTIMEOUT502",
+      "category": "exact",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.010750009096227586
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 5889.897417000611
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 555.849374999525
+        }
+      }
+    },
+    {
+      "query": "SKU48213BLK",
+      "category": "exact",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.005583002348430455
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 6083.285624990822
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 551.8148749979446
+        }
+      }
+    },
+    {
+      "query": "ORD2024088891",
+      "category": "exact",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.025125002139247954
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 6011.22887499514
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 463.5717079945607
+        }
+      }
+    },
+    {
+      "query": "psycopg2OperationalError",
+      "category": "exact",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.004875008016824722
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 6203.136458992958
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 686.1120829998981
+        }
+      }
+    },
+    {
+      "query": "0x8007042B",
+      "category": "exact",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.008167000487446785
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 5981.345082996995
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 319.43499999761116
+        }
+      }
+    },
+    {
+      "query": "INVUS99201",
+      "category": "exact",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.01274999522138387
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 6293.222459004028
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 474.71095800574403
+        }
+      }
+    },
+    {
+      "query": "TICKETQA77410",
+      "category": "exact",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.006707996362820268
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 6222.127749992069
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 549.1443329956383
+        }
+      }
+    },
+    {
+      "query": "MODELXR2200",
+      "category": "exact",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.00508299854118377
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 6019.596415993874
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 607.1842910023406
+        }
+      }
+    },
+    {
+      "query": "CVE202441029",
+      "category": "exact",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.020166000467725098
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 7770.095792002394
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 431.14791699917987
+        }
+      }
+    },
+    {
+      "query": "BATCHJOB90441",
+      "category": "exact",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.005207999492995441
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 4370.707084002788
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 0.6309297535714575,
+          "recall_at_10": 1,
+          "latency_ms": 381.8805839982815
+        }
+      }
+    },
+    {
+      "query": "customer got charged twice when their payment retried, reference TCKTBILL5521",
+      "category": "combined",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.03783300053328276
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 6400.118416000623
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 664.9703750008484
+        }
+      }
+    },
+    {
+      "query": "vpn keeps dropping whenever my laptop wakes up from sleep, incident INCVPN6634",
+      "category": "combined",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.004624991561286151
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 6040.291249999427
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 630.6329999933951
+        }
+      }
+    },
+    {
+      "query": "export option is stuck greyed out on the dashboard after upgrading my plan, case CASEXPT4471",
+      "category": "combined",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.013208002201281488
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 5919.812624997576
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 632.5951670005452
+        }
+      }
+    },
+    {
+      "query": "notifications on my phone show up way late since the newest beta update, bug BUGNOTIF8802",
+      "category": "combined",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.006582995411008596
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 5978.497458010679
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 633.2929999916814
+        }
+      }
+    },
+    {
+      "query": "when I rotate my API key in the admin panel it doesn't actually revoke the old one, ticket TCKTAPIKEY9013",
+      "category": "combined",
+      "rerankers": {
+        "no-rerank (hybrid only)": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 0.008666000212542713
+        },
+        "cohere": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 5896.660374986823
+        },
+        "bge-reranker-base": {
+          "ndcg_at_10": 1.0,
+          "recall_at_10": 1,
+          "latency_ms": 636.1048749968177
+        }
+      }
+    }
+  ]
+}

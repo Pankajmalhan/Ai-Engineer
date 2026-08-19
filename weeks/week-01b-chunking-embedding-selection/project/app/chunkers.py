@@ -67,7 +67,15 @@ def _hf_tokenizer(model_name: str):
 
 
 def _st_kwargs(model_name: str) -> dict:
-    return {"trust_remote_code": True} if model_name in TRUST_REMOTE_CODE_MODELS else {}
+    # device="cpu" is deliberate, not a default left alone: ModernBERT's
+    # attention path deadlocks on Apple's MPS backend (the forward pass hangs
+    # indefinitely with the Metal command queue idle and the main thread
+    # parked on a mutex -- a known sentence-transformers/MPS incompatibility,
+    # not a download or auth issue). CPU is slower but actually completes.
+    kwargs: dict = {"device": "cpu"}
+    if model_name in TRUST_REMOTE_CODE_MODELS:
+        kwargs["trust_remote_code"] = True
+    return kwargs
 
 
 def build_chunker(strategy: str, model_name: str, chunk_size: int = CHUNK_SIZE):
