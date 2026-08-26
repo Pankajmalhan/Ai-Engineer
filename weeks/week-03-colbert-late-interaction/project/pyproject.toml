@@ -1,0 +1,27 @@
+[project]
+name = "colbert-late-interaction"
+version = "0.1.0"
+description = "Week 3 project: ColBERT/PLAID late-interaction retrieval (RAGatouille) vs. a bi-encoder baseline, over a real Wikipedia corpus"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    # RAGatouille 0.0.9.post2 (the last release on the Stanford ColBERT
+    # backend -- 0.0.10+ migrates to PyLate, see concept.md) has three
+    # unpinned transitive deps that break against current releases. All
+    # three constraints below were discovered by actually running this
+    # project, not guessed -- see project/README.md's Setup section.
+    "ragatouille>=0.0.9.post2,<0.0.10",
+    "langchain<1.0",       # ragatouille imports langchain.retrievers.document_compressors, removed in langchain v1
+    "transformers<4.50",   # colbert-ai's custom HF_ColBERT subclass breaks on transformers>=4.50's weight-tying refactor
+    "psutil>=7.2.2",        # fast_pytorch_kmeans (a ragatouille dependency) imports psutil without declaring it
+    "requests>=2.31",
+    "tabulate>=0.9.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,25 @@
+[project]
+name = "corrective-rag-routing"
+version = "0.1.0"
+description = "Week 4 project: query router (factual/code -> BM25+pgvector hybrid search) and Corrective RAG (retrieve -> grade -> refine/rewrite/web-search/generate). DSPy prompt optimization is deferred -- see concept.md."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "scikit-learn>=1.5",         # TF-IDF + cosine similarity backing the *query* router (not document retrieval)
+    "rank-bm25>=0.2.2",          # BM25 leg of the hybrid retriever
+    "sentence-transformers>=3.0", # real dense embeddings for the pgvector leg of the hybrid retriever
+    "psycopg[binary]>=3.1",      # Postgres driver
+    "pgvector>=0.3",             # vector type + distance operators for psycopg
+    "pydantic>=2.7",             # RelevanceScore / structured-output models
+    "instructor>=1.4",           # structured LLM output: grader, query rewriter, knowledge refiner
+    "anthropic>=0.34",           # LLM backend for the real (non-heuristic) grader/rewriter/refiner/answerer
+    "tavily-python>=0.5",        # real web search fallback client
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

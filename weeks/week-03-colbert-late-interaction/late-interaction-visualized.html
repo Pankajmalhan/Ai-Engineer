@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inside Late Interaction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,500&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #F5F6FA;
+    --surface: #FFFFFF;
+    --surface-2: #ECEDF6;
+    --border: #D7D9E6;
+    --ink: #191828;
+    --muted: #6B6E85;
+    --accent: #4338CA;       /* query / vector-space color */
+    --accent-warm: #C2410C;  /* the correct match / centroid color */
+    --accent-soft: #E7E5FB;
+    --accent-warm-soft: #FBE7DD;
+    --shadow: 0 1px 2px rgba(25, 24, 40, 0.04), 0 8px 24px rgba(25, 24, 40, 0.05);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14131D;
+      --surface: #1D1C2A;
+      --surface-2: #242335;
+      --border: #34324A;
+      --ink: #EDEDF6;
+      --muted: #9997B0;
+      --accent: #9691F5;
+      --accent-warm: #F0895A;
+      --accent-soft: #2A2750;
+      --accent-warm-soft: #3A2A22;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #14131D;
+    --surface: #1D1C2A;
+    --surface-2: #242335;
+    --border: #34324A;
+    --ink: #EDEDF6;
+    --muted: #9997B0;
+    --accent: #9691F5;
+    --accent-warm: #F0895A;
+    --accent-soft: #2A2750;
+    --accent-warm-soft: #3A2A22;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    margin: 0;
+    padding: 4.5rem 1.5rem 6rem;
+  }
+
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-warm);
+    font-weight: 700;
+  }
+
+  h1 {
+    font-family: 'Newsreader', Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 4.2vw, 2.75rem);
+    line-height: 1.15;
+    text-wrap: balance;
+    margin: 0.5rem 0 0;
+  }
+
+  .intro {
+    max-width: 62ch;
+    color: var(--ink);
+    font-size: 1.09rem;
+  }
+
+  .intro em { color: var(--muted); font-style: italic; }
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  h2 {
+    font-family: 'Newsreader', Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+    text-wrap: balance;
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+
+  h2 .step {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.95rem;
+    color: var(--accent-warm);
+    font-weight: 700;
+  }
+
+  section > p {
+    max-width: 68ch;
+    margin: 0;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    font-size: 0.88em;
+    background: var(--surface-2);
+    padding: 0.12em 0.4em;
+    border-radius: 4px;
+  }
+
+  figure {
+    margin: 0.25rem 0 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 1.4rem 1.4rem 1.2rem;
+  }
+
+  .diagram-scroll {
+    overflow-x: auto;
+  }
+
+  figure svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-width: 560px;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+
+  figcaption {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.94rem;
+    line-height: 1.6;
+  }
+
+  figcaption strong { color: var(--ink); }
+
+  .legend-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.4rem;
+    margin-top: 0.9rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .legend-row span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .swatch {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    display: inline-block;
+    flex: none;
+  }
+
+  .swatch.line {
+    width: 18px;
+    height: 0;
+    border-radius: 0;
+    border-top: 2.5px solid var(--accent-warm);
+  }
+
+  .swatch.dash {
+    width: 18px;
+    height: 0;
+    border-radius: 0;
+    border-top: 2px dashed var(--accent);
+  }
+
+  footer {
+    max-width: 68ch;
+    color: var(--muted);
+    font-size: 0.98rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    figure { transition: box-shadow 0.2s ease; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+  <header>
+    <div class="eyebrow">Week 3 — ColBERT companion</div>
+    <h1>Inside Late Interaction</h1>
+    <p class="intro">
+      Three pictures for three mechanisms from <code>concept.md</code>: how a
+      document turns into many vectors instead of one, how MaxSim actually
+      scores a match, and what a "centroid" is when PLAID compresses the
+      index. Same running example throughout — the query
+      <em>"who founded Studio Ghibli"</em> against the real target document.
+    </p>
+  </header>
+
+  <section aria-labelledby="fig1-heading">
+    <h2 id="fig1-heading"><span class="step">01</span> A document becomes many vectors, not one</h2>
+    <p>
+      A bi-encoder pools a whole passage into a single vector. ColBERT never
+      pools — the passage is tokenized, and <strong>every token keeps its own
+      128-dimensional vector</strong>, produced by the same BERT encoder plus
+      one small linear layer that projects its 768-dim output down to 128.
+    </p>
+    <figure>
+    <div class="diagram-scroll">
+      <svg viewBox="0 0 860 380" role="img" aria-label="An article is split into passages, one passage is tokenized into subword tokens, and each token receives its own compressed vector strip below it.">
+        <defs>
+          <marker id="arrow1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <!-- Article -->
+        <rect x="30" y="50" width="90" height="90" rx="6" fill="var(--surface)" stroke="currentColor" stroke-width="1.3"/>
+        <line x1="46" y1="70" x2="104" y2="70" stroke="currentColor" stroke-opacity="0.35"/>
+        <line x1="46" y1="84" x2="104" y2="84" stroke="currentColor" stroke-opacity="0.35"/>
+        <line x1="46" y1="98" x2="104" y2="98" stroke="currentColor" stroke-opacity="0.35"/>
+        <line x1="46" y1="112" x2="90" y2="112" stroke="currentColor" stroke-opacity="0.35"/>
+        <text x="75" y="158" text-anchor="middle" font-size="13" font-weight="600">Article</text>
+        <text x="75" y="173" text-anchor="middle" font-size="11" fill="var(--muted)">~9,000 words</text>
+
+        <line x1="122" y1="95" x2="168" y2="95" stroke="currentColor" stroke-width="1.4" marker-end="url(#arrow1)"/>
+        <text x="145" y="82" text-anchor="middle" font-size="11" fill="var(--muted)">split, ≤256 tok</text>
+
+        <!-- Passages stack -->
+        <rect x="173" y="55" width="94" height="22" rx="4" fill="var(--surface)" stroke="var(--border)"/>
+        <rect x="173" y="82" width="94" height="22" rx="4" fill="var(--accent-warm-soft)" stroke="var(--accent-warm)" stroke-width="2"/>
+        <rect x="173" y="109" width="94" height="22" rx="4" fill="var(--surface)" stroke="var(--border)"/>
+        <rect x="173" y="136" width="94" height="22" rx="4" fill="var(--surface)" stroke="var(--border)"/>
+        <text x="220" y="45" text-anchor="middle" font-size="11" fill="var(--muted)">passages</text>
+        <text x="220" y="172" text-anchor="middle" font-size="11" fill="var(--muted)">passage 12 / 340</text>
+
+        <line x1="220" y1="104" x2="220" y2="150" stroke="currentColor" stroke-width="0" />
+        <path d="M220,104 L220,150 L220,190" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#arrow1)"/>
+        <text x="235" y="150" font-size="11" fill="var(--muted)">tokenize</text>
+
+        <!-- Token chips -->
+        <text x="30" y="196" font-size="11" fill="var(--muted)">passage 12&#8217;s tokens:</text>
+        <g font-size="12" font-weight="600">
+          <rect x="30"  y="205" width="88" height="30" rx="6" fill="var(--surface-2)" stroke="var(--border)"/>
+          <text x="74"  y="224" text-anchor="middle">Hayao</text>
+          <rect x="128" y="205" width="88" height="30" rx="6" fill="var(--surface-2)" stroke="var(--border)"/>
+          <text x="172" y="224" text-anchor="middle">Miya</text>
+          <rect x="226" y="205" width="88" height="30" rx="6" fill="var(--surface-2)" stroke="var(--border)"/>
+          <text x="270" y="224" text-anchor="middle">##zaki</text>
+          <rect x="324" y="205" width="88" height="30" rx="6" fill="var(--surface-2)" stroke="var(--border)"/>
+          <text x="368" y="224" text-anchor="middle">and</text>
+          <rect x="422" y="205" width="88" height="30" rx="6" fill="var(--accent-warm-soft)" stroke="var(--accent-warm)" stroke-width="1.6"/>
+          <text x="466" y="224" text-anchor="middle">founded</text>
+          <rect x="520" y="205" width="88" height="30" rx="6" fill="var(--accent-warm-soft)" stroke="var(--accent-warm)" stroke-width="1.6"/>
+          <text x="564" y="224" text-anchor="middle">Studio</text>
+          <rect x="618" y="205" width="88" height="30" rx="6" fill="var(--accent-warm-soft)" stroke="var(--accent-warm)" stroke-width="1.6"/>
+          <text x="662" y="224" text-anchor="middle">Ghibli</text>
+          <rect x="716" y="205" width="88" height="30" rx="6" fill="var(--surface-2)" stroke="var(--border)"/>
+          <text x="760" y="224" text-anchor="middle" font-weight="400" fill="var(--muted)">&#8943;</text>
+        </g>
+
+        <!-- down arrows chip -> vector -->
+        <g stroke="currentColor" stroke-width="1.1" stroke-opacity="0.55" marker-end="url(#arrow1)">
+          <line x1="74"  y1="235" x2="74"  y2="258"/>
+          <line x1="172" y1="235" x2="172" y2="258"/>
+          <line x1="270" y1="235" x2="270" y2="258"/>
+          <line x1="368" y1="235" x2="368" y2="258"/>
+          <line x1="466" y1="235" x2="466" y2="258"/>
+          <line x1="564" y1="235" x2="564" y2="258"/>
+          <line x1="662" y1="235" x2="662" y2="258"/>
+        </g>
+
+        <!-- vector glyphs: 6-cell mini heatmap per token -->
+        <g stroke="var(--border)" stroke-width="0.6">
+          <!-- helper: emit 7 glyphs at cx values -->
+          <g>
+            <!-- Hayao -->
+            <rect x="56" y="262" width="10" height="7" fill="currentColor" fill-opacity="0.15"/>
+            <rect x="66" y="262" width="10" height="7" fill="currentColor" fill-opacity="0.45"/>
+            <rect x="76" y="262" width="10" height="7" fill="currentColor" fill-opacity="0.30"/>
+            <rect x="56" y="269" width="10" height="7" fill="currentColor" fill-opacity="0.60"/>
+            <rect x="66" y="269" width="10" height="7" fill="currentColor" fill-opacity="0.20"/>
+            <rect x="76" y="269" width="10" height="7" fill="currentColor" fill-opacity="0.40"/>
+          </g>
+          <g transform="translate(98,0)">
+            <rect x="56" y="262" width="10" height="7" fill="currentColor" fill-opacity="0.35"/>
+            <rect x="66" y="262" width="10" height="7" fill="currentColor" fill-opacity="0.55"/>
+            <rect x="76" y="262" width="10" height="7" fill="currentColor" fill-opacity="0.15"/>
+            <rect x="56" y="269" width="10" height="7" fill="currentColor" fill-opacity="0.25"/>
+            <rect x="66" y="269" width="10" height="7" fill="currentColor" fill-opacity="0.50"/>
+            <rect x="76" y="269" width="10" height="7" fill="currentColor" fill-opacity="0.35"/>
+          </g>
+          <g transform="translate(196,0)">
+            <rect x="56" y="262" width="10" height="7" fill="currentColor" fill-opacity="0.50"/>
+            <rect x="66" y="262" width="10" height="7" fill="currentColor" fill-opacity="0.20"/>
+            <rect x="76" y="262" width="10" height="7" fill="currentColor" fill-opacity="0.45"/>
+            <rect x="56" y="269" width="10" height="7" fill="currentColor" fill-opacity="0.30"/>
+            <rect x="66" y="269" width="10" height="7" fill="currentColor" fill-opacity="0.60"/>
+            <rect x="76" y="269" width="10" height="7" fill="currentColor" fill-opacity="0.15"/>
+          </g>
+          <g transform="translate(294,0)">
+            <rect x="56" y="262" width="10" height="7" fill="currentColor" fill-opacity="0.20"/>
+            <rect x="66" y="262" width="10" height="7" fill="currentColor" fill-opacity="0.40"/>
+            <rect x="76" y="262" width="10" height="7" fill="currentColor" fill-opacity="0.55"/>
+            <rect x="56" y="269" width="10" height="7" fill="currentColor" fill-opacity="0.45"/>
+            <rect x="66" y="269" width="10" height="7" fill="currentColor" fill-opacity="0.25"/>
+            <rect x="76" y="269" width="10" height="7" fill="currentColor" fill-opacity="0.35"/>
+          </g>
+          <g transform="translate(392,0)" stroke="var(--accent-warm)">
+            <rect x="56" y="262" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.85"/>
+            <rect x="66" y="262" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.35"/>
+            <rect x="76" y="262" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.60"/>
+            <rect x="56" y="269" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.25"/>
+            <rect x="66" y="269" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.70"/>
+            <rect x="76" y="269" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.40"/>
+          </g>
+          <g transform="translate(490,0)" stroke="var(--accent-warm)">
+            <rect x="56" y="262" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.40"/>
+            <rect x="66" y="262" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.75"/>
+            <rect x="76" y="262" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.30"/>
+            <rect x="56" y="269" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.60"/>
+            <rect x="66" y="269" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.20"/>
+            <rect x="76" y="269" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.50"/>
+          </g>
+          <g transform="translate(588,0)" stroke="var(--accent-warm)">
+            <rect x="56" y="262" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.55"/>
+            <rect x="66" y="262" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.30"/>
+            <rect x="76" y="262" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.80"/>
+            <rect x="56" y="269" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.35"/>
+            <rect x="66" y="269" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.65"/>
+            <rect x="76" y="269" width="10" height="7" fill="var(--accent-warm)" fill-opacity="0.25"/>
+          </g>
+        </g>
+
+        <text x="30" y="300" font-size="11" fill="var(--muted)">7 tokens shown &#8594; 7 separate 128-dim vectors (not one vector for the whole passage)</text>
+        <text x="30" y="320" font-size="11" fill="var(--muted)">encoder step, all glyphs: BERT + linear(768&#8594;128), same weights for every token</text>
+      </svg>
+    </div>
+    <figcaption>
+      <strong>What this shows:</strong> the article is split into ~256-token
+      passages; the highlighted passage is tokenized into subword pieces; and
+      every token — including the three marked in orange, which the next
+      figure scores — comes out of the encoder with its own vector. A
+      bi-encoder would collapse all 7 of these into a single passage vector
+      right here; ColBERT keeps all 7.
+    </figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="fig2-heading">
+    <h2 id="fig2-heading"><span class="step">02</span> MaxSim: each query token shops for its own best match</h2>
+    <p>
+      Query tokens and document tokens are compared <em>pairwise</em>. For
+      every query token, MaxSim looks at every token in the document and
+      keeps only the single highest similarity — then adds those best-matches
+      up. Nothing here is bounded like cosine similarity; it's a sum.
+    </p>
+    <figure>
+    <div class="diagram-scroll">
+      <svg viewBox="0 0 860 500" role="img" aria-label="Four query tokens on the left each connect faintly to eight document tokens on the right; one highlighted line per query token marks its single best match, and the four best-match scores are summed to a total of 3.72.">
+        <defs>
+          <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <text x="150" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)" letter-spacing="0.04em">QUERY TOKENS</text>
+        <text x="680" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)" letter-spacing="0.04em">DOC TOKENS (the correct document)</text>
+
+        <!-- faint all-pairs lines -->
+        <g stroke="currentColor" stroke-opacity="0.10" stroke-width="1">
+          <!-- query centers: 60,150,240,330 ; doc centers: 31,76,121,166,211,256,301,346 -->
+          <line x1="240" y1="60"  x2="580" y2="31"/>
+          <line x1="240" y1="60"  x2="580" y2="76"/>
+          <line x1="240" y1="60"  x2="580" y2="121"/>
+          <line x1="240" y1="60"  x2="580" y2="166"/>
+          <line x1="240" y1="60"  x2="580" y2="211"/>
+          <line x1="240" y1="60"  x2="580" y2="256"/>
+          <line x1="240" y1="60"  x2="580" y2="301"/>
+          <line x1="240" y1="60"  x2="580" y2="346"/>
+
+          <line x1="240" y1="150" x2="580" y2="31"/>
+          <line x1="240" y1="150" x2="580" y2="76"/>
+          <line x1="240" y1="150" x2="580" y2="121"/>
+          <line x1="240" y1="150" x2="580" y2="166"/>
+          <line x1="240" y1="150" x2="580" y2="211"/>
+          <line x1="240" y1="150" x2="580" y2="256"/>
+          <line x1="240" y1="150" x2="580" y2="301"/>
+          <line x1="240" y1="150" x2="580" y2="346"/>
+
+          <line x1="240" y1="240" x2="580" y2="31"/>
+          <line x1="240" y1="240" x2="580" y2="76"/>
+          <line x1="240" y1="240" x2="580" y2="121"/>
+          <line x1="240" y1="240" x2="580" y2="166"/>
+          <line x1="240" y1="240" x2="580" y2="211"/>
+          <line x1="240" y1="240" x2="580" y2="256"/>
+          <line x1="240" y1="240" x2="580" y2="301"/>
+          <line x1="240" y1="240" x2="580" y2="346"/>
+
+          <line x1="240" y1="330" x2="580" y2="31"/>
+          <line x1="240" y1="330" x2="580" y2="76"/>
+          <line x1="240" y1="330" x2="580" y2="121"/>
+          <line x1="240" y1="330" x2="580" y2="166"/>
+          <line x1="240" y1="330" x2="580" y2="211"/>
+          <line x1="240" y1="330" x2="580" y2="256"/>
+          <line x1="240" y1="330" x2="580" y2="301"/>
+          <line x1="240" y1="330" x2="580" y2="346"/>
+        </g>
+
+        <!-- winning lines -->
+        <g stroke="var(--accent-warm)" stroke-width="2.4">
+          <line x1="240" y1="60"  x2="580" y2="76"/>   <!-- who -> Miyazaki -->
+          <line x1="240" y1="150" x2="580" y2="211"/>  <!-- founded -> founded -->
+          <line x1="240" y1="240" x2="580" y2="256"/>  <!-- studio -> Studio -->
+          <line x1="240" y1="330" x2="580" y2="301"/>  <!-- ghibli -> Ghibli -->
+        </g>
+
+        <!-- score pills on winning lines -->
+        <g font-size="12" font-weight="700" fill="var(--accent-warm)">
+          <rect x="392" y="58"  width="42" height="19" rx="9.5" fill="var(--surface)" stroke="var(--accent-warm)"/>
+          <text x="413" y="72" text-anchor="middle">0.89</text>
+          <rect x="392" y="171" width="42" height="19" rx="9.5" fill="var(--surface)" stroke="var(--accent-warm)"/>
+          <text x="413" y="185" text-anchor="middle">0.91</text>
+          <rect x="392" y="238" width="42" height="19" rx="9.5" fill="var(--surface)" stroke="var(--accent-warm)"/>
+          <text x="413" y="252" text-anchor="middle">0.95</text>
+          <rect x="392" y="306" width="42" height="19" rx="9.5" fill="var(--surface)" stroke="var(--accent-warm)"/>
+          <text x="413" y="320" text-anchor="middle">0.97</text>
+        </g>
+
+        <!-- query chips -->
+        <g font-size="13" font-weight="600">
+          <rect x="60" y="40"  width="180" height="40" rx="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.4"/>
+          <text x="150" y="65" text-anchor="middle">who</text>
+          <rect x="60" y="130" width="180" height="40" rx="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.4"/>
+          <text x="150" y="155" text-anchor="middle">founded</text>
+          <rect x="60" y="220" width="180" height="40" rx="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.4"/>
+          <text x="150" y="245" text-anchor="middle">studio</text>
+          <rect x="60" y="310" width="180" height="40" rx="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.4"/>
+          <text x="150" y="335" text-anchor="middle">ghibli</text>
+        </g>
+
+        <!-- doc chips -->
+        <g font-size="12.5" font-weight="600">
+          <rect x="580" y="15"  width="200" height="32" rx="8" fill="var(--surface-2)" stroke="var(--border)"/>
+          <text x="680" y="35" text-anchor="middle">Hayao</text>
+          <rect x="580" y="60"  width="200" height="32" rx="8" fill="var(--accent-warm-soft)" stroke="var(--accent-warm)" stroke-width="1.6"/>
+          <text x="680" y="80" text-anchor="middle">Miyazaki</text>
+          <rect x="580" y="105" width="200" height="32" rx="8" fill="var(--surface-2)" stroke="var(--border)"/>
+          <text x="680" y="125" text-anchor="middle">Isao</text>
+          <rect x="580" y="150" width="200" height="32" rx="8" fill="var(--surface-2)" stroke="var(--border)"/>
+          <text x="680" y="170" text-anchor="middle">Takahata</text>
+          <rect x="580" y="195" width="200" height="32" rx="8" fill="var(--accent-warm-soft)" stroke="var(--accent-warm)" stroke-width="1.6"/>
+          <text x="680" y="215" text-anchor="middle">founded</text>
+          <rect x="580" y="240" width="200" height="32" rx="8" fill="var(--accent-warm-soft)" stroke="var(--accent-warm)" stroke-width="1.6"/>
+          <text x="680" y="260" text-anchor="middle">Studio</text>
+          <rect x="580" y="285" width="200" height="32" rx="8" fill="var(--accent-warm-soft)" stroke="var(--accent-warm)" stroke-width="1.6"/>
+          <text x="680" y="305" text-anchor="middle">Ghibli</text>
+          <rect x="580" y="330" width="200" height="32" rx="8" fill="var(--surface-2)" stroke="var(--border)"/>
+          <text x="680" y="350" text-anchor="middle">1985</text>
+        </g>
+
+        <!-- score line -->
+        <line x1="30" y1="392" x2="830" y2="392" stroke="var(--border)"/>
+        <text x="30" y="418" font-size="14" font-weight="600" font-family="'JetBrains Mono', monospace">MaxSim(query, Doc A) = 0.89 + 0.91 + 0.95 + 0.97 = 3.72</text>
+
+        <!-- comparison bars -->
+        <text x="30" y="450" font-size="11" fill="var(--muted)">Doc A (correct)</text>
+        <rect x="180" y="438" width="279" height="15" rx="4" fill="var(--accent-warm)"/>
+        <text x="468" y="450" font-size="12" font-weight="700" font-family="'JetBrains Mono', monospace">3.72</text>
+
+        <text x="30" y="475" font-size="11" fill="var(--muted)">Doc B (distractor)</text>
+        <rect x="180" y="463" width="192" height="15" rx="4" fill="currentColor" fill-opacity="0.28"/>
+        <text x="382" y="475" font-size="12" font-weight="700" font-family="'JetBrains Mono', monospace">2.56</text>
+      </svg>
+    </div>
+    <div class="legend-row">
+      <span><span class="swatch line"></span> the one best match kept per query token</span>
+      <span><span class="swatch" style="background:currentColor;opacity:.15;width:11px;height:0;border-top:1px solid currentColor;border-radius:0;"></span> all other pairings (scored, then discarded)</span>
+    </div>
+    <figcaption>
+      <strong>What this shows:</strong> "who" and "founded" have nothing good
+      to latch onto anywhere in the distractor document (Doc B, from
+      concept.md) — that's why its total (2.56) trails Doc A (3.72) even
+      though Doc B does contain "Studio" and "Ghibli" literally. A pooled
+      bi-encoder vector can't see that gap; it only sees "this is broadly
+      about Studio Ghibli" for both documents.
+    </figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="fig3-heading">
+    <h2 id="fig3-heading"><span class="step">03</span> What a centroid actually is</h2>
+    <p>
+      Storing a full 128-number vector for every token in a whole corpus is
+      expensive. PLAID's fix: pre-cluster <em>all</em> token vectors into a
+      modest number of centroids, then store each token as just
+      "which centroid is closest" plus a small correction — the
+      <strong>residual</strong>.
+    </p>
+    <figure>
+    <div class="diagram-scroll">
+      <svg viewBox="0 0 860 470" role="img" aria-label="A scatter of token-vector dots forms three clusters, each with one larger centroid marker; one highlighted token dot connects to its cluster's centroid with a dashed line labeled residual. A side panel compares raw 128-float storage to the compressed centroid-plus-residual storage, roughly ten times smaller.">
+        <!-- Left panel: scatter -->
+        <rect x="20" y="40" width="460" height="380" rx="10" fill="var(--surface)" stroke="var(--border)"/>
+        <text x="250" y="26" text-anchor="middle" font-size="11" fill="var(--muted)">token-vector space (2D sketch of the real 128-d space)</text>
+
+        <!-- cluster dots -->
+        <g fill="currentColor" fill-opacity="0.5">
+          <circle cx="100" cy="100" r="3"/><circle cx="135" cy="95" r="3"/><circle cx="110" cy="140" r="3"/>
+          <circle cx="150" cy="130" r="3"/><circle cx="90"  cy="130" r="3"/><circle cx="125" cy="150" r="3"/>
+          <circle cx="160" cy="110" r="3"/><circle cx="105" cy="115" r="3"/><circle cx="140" cy="150" r="3"/>
+          <circle cx="95"  cy="160" r="3"/>
+
+          <circle cx="150" cy="300" r="3"/><circle cx="190" cy="295" r="3"/><circle cx="160" cy="340" r="3"/>
+          <circle cx="200" cy="330" r="3"/><circle cx="140" cy="330" r="3"/><circle cx="180" cy="350" r="3"/>
+          <circle cx="210" cy="310" r="3"/><circle cx="155" cy="320" r="3"/>
+
+          <circle cx="340" cy="160" r="3"/><circle cx="380" cy="155" r="3"/><circle cx="350" cy="200" r="3"/>
+          <circle cx="390" cy="190" r="3"/><circle cx="330" cy="190" r="3"/><circle cx="370" cy="210" r="3"/>
+          <circle cx="400" cy="170" r="3"/><circle cx="345" cy="175" r="3"/><circle cx="385" cy="220" r="3"/>
+          <circle cx="335" cy="210" r="3"/>
+        </g>
+
+        <!-- the one highlighted token -->
+        <circle cx="195" cy="355" r="4.5" fill="var(--accent)" stroke="var(--ink)" stroke-width="1"/>
+
+        <!-- centroids -->
+        <circle cx="122" cy="124" r="7" fill="var(--accent-warm)" stroke="var(--ink)" stroke-width="1"/>
+        <circle cx="172" cy="322" r="7" fill="var(--accent-warm)" stroke="var(--ink)" stroke-width="1"/>
+        <circle cx="362" cy="183" r="7" fill="var(--accent-warm)" stroke="var(--ink)" stroke-width="1"/>
+
+        <!-- residual dashed line + label -->
+        <line x1="195" y1="355" x2="172" y2="322" stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="4 3"/>
+        <rect x="196" y="332" width="66" height="16" fill="var(--surface)" fill-opacity="0.9" rx="3"/>
+        <text x="199" y="344" font-size="11" fill="var(--accent)" font-weight="700">residual</text>
+
+        <!-- legend -->
+        <g font-size="11" fill="var(--muted)">
+          <circle cx="40" cy="430" r="3" fill="currentColor" fill-opacity="0.5"/>
+          <text x="50" y="434">token vector</text>
+          <circle cx="150" cy="430" r="5" fill="var(--accent-warm)" stroke="var(--ink)"/>
+          <text x="162" y="434">centroid</text>
+          <circle cx="245" cy="430" r="4" fill="var(--accent)" stroke="var(--ink)"/>
+          <text x="257" y="434">this token</text>
+          <line x1="345" y1="430" x2="365" y2="430" stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="4 3"/>
+          <text x="371" y="434">residual (the correction)</text>
+        </g>
+
+        <!-- Right panel: storage comparison -->
+        <rect x="560" y="40" width="280" height="390" rx="10" fill="var(--surface)" stroke="var(--border)"/>
+        <text x="700" y="65" text-anchor="middle" font-size="12.5" font-weight="700">Per-token storage cost</text>
+
+        <text x="700" y="90" text-anchor="middle" font-size="11" fill="var(--muted)">raw (uncompressed)</text>
+        <g fill="var(--surface-2)" stroke="var(--border)">
+          <rect x="580" y="100" width="26" height="20" rx="3"/><rect x="609" y="100" width="26" height="20" rx="3"/>
+          <rect x="638" y="100" width="26" height="20" rx="3"/><rect x="667" y="100" width="26" height="20" rx="3"/>
+          <rect x="696" y="100" width="26" height="20" rx="3"/><rect x="725" y="100" width="26" height="20" rx="3"/>
+          <rect x="754" y="100" width="26" height="20" rx="3"/><rect x="783" y="100" width="26" height="20" rx="3"/>
+        </g>
+        <text x="700" y="138" text-anchor="middle" font-size="10.5" fill="var(--muted)">128 &#215; 32-bit floats &#8776; 512 bytes</text>
+
+        <path d="M700,150 L700,175" stroke="var(--accent-warm)" stroke-width="1.6" marker-end="url(#arrow3)"/>
+        <text x="716" y="167" font-size="11" fill="var(--accent-warm)" font-weight="700">compress</text>
+
+        <text x="700" y="195" text-anchor="middle" font-size="11" fill="var(--muted)">compressed (what PLAID stores)</text>
+        <rect x="620" y="205" width="160" height="28" rx="6" fill="var(--accent-warm-soft)" stroke="var(--accent-warm)"/>
+        <text x="700" y="223" text-anchor="middle" font-size="12" font-weight="700" font-family="'JetBrains Mono', monospace">centroid #482</text>
+
+        <g fill="var(--accent-soft)" stroke="var(--border)">
+          <rect x="620" y="245" width="18" height="14" rx="2"/><rect x="640" y="245" width="18" height="14" rx="2"/>
+          <rect x="660" y="245" width="18" height="14" rx="2"/><rect x="680" y="245" width="18" height="14" rx="2"/>
+          <rect x="700" y="245" width="18" height="14" rx="2"/><rect x="720" y="245" width="18" height="14" rx="2"/>
+          <rect x="740" y="245" width="18" height="14" rx="2"/><rect x="760" y="245" width="18" height="14" rx="2"/>
+        </g>
+        <text x="700" y="276" text-anchor="middle" font-size="10.5" fill="var(--muted)">+ residual: 1&#8211;2 bits &#215; 128 dims</text>
+
+        <text x="700" y="308" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent-warm)">&#8776; 32&#8211;48 bytes total</text>
+        <text x="700" y="328" text-anchor="middle" font-size="10.5" fill="var(--muted)">roughly 10&#8211;15&#215; smaller than raw</text>
+
+        <defs>
+          <marker id="arrow3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--accent-warm)"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+    <figcaption>
+      <strong>What this shows:</strong> a centroid is just an ordinary point
+      in the same 128-dim space — the average location of a cluster of
+      similar token vectors PLAID found by running k-means over the whole
+      corpus once, at indexing time. A token is then stored as
+      <em>"closest centroid #482"</em> plus a small residual vector that only
+      has to correct the gap between the token and that centroid — not
+      re-describe the token from scratch. That's the entire compression
+      trick: nearby vectors share a centroid, so only their small
+      differences need full precision.
+    </figcaption>
+    </figure>
+  </section>
+
+  <footer>
+    Same running example as <code>concept.md</code>: query
+    <em>"who founded Studio Ghibli"</em>, Doc A the correct target, Doc B the
+    same-topic distractor. Ask away when the next question comes up.
+  </footer>
+</main>
+
+</body>
+</html>
