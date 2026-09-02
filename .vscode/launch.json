@@ -1,0 +1,65 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Week 1c: Debug current file",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "python": "${workspaceFolder}/weeks/week-01c-document-ingestion-dedup/project/.venv/bin/python",
+            "cwd": "${workspaceFolder}/weeks/week-01c-document-ingestion-dedup/project",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/weeks/week-01c-document-ingestion-dedup/project",
+                "PYDEVD_LOAD_NATIVE_LIB": "0"
+            }
+        },
+        {
+            "name": "Week 1c: Debug runner.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/weeks/week-01c-document-ingestion-dedup/project/runner.py",
+            "python": "${workspaceFolder}/weeks/week-01c-document-ingestion-dedup/project/.venv/bin/python",
+            "cwd": "${workspaceFolder}/weeks/week-01c-document-ingestion-dedup/project",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": { "PYDEVD_LOAD_NATIVE_LIB": "0" }
+        },
+        {
+            "name": "Week 1c: Debug app.demo",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "app.demo",
+            "python": "${workspaceFolder}/weeks/week-01c-document-ingestion-dedup/project/.venv/bin/python",
+            "cwd": "${workspaceFolder}/weeks/week-01c-document-ingestion-dedup/project",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": { "PYDEVD_LOAD_NATIVE_LIB": "0" }
+        },
+        {
+            "name": "Week 1c: Debug all tests (pytest)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": ["-v", "-s"],
+            "python": "${workspaceFolder}/weeks/week-01c-document-ingestion-dedup/project/.venv/bin/python",
+            "cwd": "${workspaceFolder}/weeks/week-01c-document-ingestion-dedup/project",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": { "PYDEVD_LOAD_NATIVE_LIB": "0" }
+        },
+        {
+            "name": "Week 1c: Debug current test file",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": ["-v", "-s", "${file}"],
+            "python": "${workspaceFolder}/weeks/week-01c-document-ingestion-dedup/project/.venv/bin/python",
+            "cwd": "${workspaceFolder}/weeks/week-01c-document-ingestion-dedup/project",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": { "PYDEVD_LOAD_NATIVE_LIB": "0" }
+        }
+    ]
+}

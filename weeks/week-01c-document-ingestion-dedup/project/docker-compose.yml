@@ -1,0 +1,22 @@
+name: week1c-doc-ingestion
+
+services:
+  pgvector:
+    image: pgvector/pgvector:pg16
+    container_name: week1c-pgvector
+    environment:
+      POSTGRES_USER: week1c
+      POSTGRES_PASSWORD: week1c
+      POSTGRES_DB: week1c_ingestion
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U week1c -d week1c_ingestion"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgvector_data:

@@ -1,0 +1,9 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/weeks/week-01c-document-ingestion-dedup/project/.venv/bin/python",
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestArgs": [
+        "weeks/week-01c-document-ingestion-dedup/project/tests"
+    ],
+    "python.testing.cwd": "${workspaceFolder}/weeks/week-01c-document-ingestion-dedup/project"
+}
