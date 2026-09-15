@@ -1,0 +1,31 @@
+[project]
+name = "ragas-evaluation-metrics"
+version = "0.1.0"
+description = "Week 5 project: a small standalone retrieve+generate RAG pipeline, a 50-sample (10 hand-labeled + 40 GPT-4o-synthetic) evaluation dataset, and the RAGAS metric suite (Faithfulness, Answer Relevancy, Context Precision, Context Recall, Answer/Semantic Similarity, Answer Correctness) run against it and logged to W&B."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "ragas>=0.4",         # RAG-specific evaluation metrics
+    "openai>=1.50",       # GPT-4o-mini/GPT-4o generation, synthetic QA, and RAGAS's LLM judge
+    "rank-bm25>=0.2",     # lightweight local retrieval -- no API cost for the retrieval half
+    "wandb>=0.18",        # baseline experiment logging
+    "datasets>=2.14",     # Dataset construction for RAGAS's legacy (pre-v0.4) evaluate() fallback
+    # Pinned <0.4: ragas==0.4.3 unconditionally imports
+    # langchain_community.chat_models.vertexai at module load time (ragas/llms/base.py),
+    # but that submodule was removed as part of langchain-community's "sunset" --
+    # Google integrations moved to the standalone langchain-google-vertexai package.
+    # Unpinned, uv resolves the latest langchain-community (0.4.x) and every `import
+    # ragas` fails with ModuleNotFoundError before any of our code even runs. 0.3.9 is
+    # the last release with that submodule intact.
+    "langchain-community<0.4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
