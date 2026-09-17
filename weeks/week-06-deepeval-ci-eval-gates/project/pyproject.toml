@@ -1,0 +1,20 @@
+[project]
+name = "deepeval-ci-eval-gates"
+version = "0.1.0"
+description = "Week 6 project: the same small retrieve+generate RAG pipeline as Week 5, evaluated with DeepEval (Faithfulness, Answer Relevancy, Contextual Recall) as pytest assertions, gated by threshold, wired into a GitHub Actions workflow that fails the build on a regression."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "deepeval>=3.6",       # LLM-as-judge RAG metrics as pytest assertions
+    "openai>=1.50",        # generation + DeepEval's default judge provider
+    "rank-bm25>=0.2",      # lightweight local retrieval -- no API cost for the retrieval half
+    "wandb>=0.18",         # baseline experiment logging
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

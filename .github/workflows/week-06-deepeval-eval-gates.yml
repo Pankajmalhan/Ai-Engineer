@@ -1,0 +1,44 @@
+name: Week 6 - DeepEval CI Eval Gates
+
+# Runs on every push to any branch (so "push a deliberately bad change" fails right on
+# that branch, per this week's task) and on PRs into main (so it can be wired up as a
+# required status check that blocks merge). Path-filtered so unrelated pushes elsewhere
+# in this multi-week roadmap repo don't trigger it.
+on:
+  push:
+    paths:
+      - "weeks/week-06-deepeval-ci-eval-gates/project/**"
+      - ".github/workflows/week-06-deepeval-eval-gates.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "weeks/week-06-deepeval-ci-eval-gates/project/**"
+      - ".github/workflows/week-06-deepeval-eval-gates.yml"
+
+jobs:
+  eval-gate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: weeks/week-06-deepeval-ci-eval-gates/project
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          working-directory: weeks/week-06-deepeval-ci-eval-gates/project
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run DeepEval eval suite
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # No CONFIDENT_API_KEY -- DeepEval runs fully locally/keyless; a Confident AI
+          # key would only add dashboard uploading, not gate this job. Opting out of
+          # telemetry keeps CI from making an extra network call it doesn't need.
+          DEEPEVAL_TELEMETRY_OPT_OUT: "1"
+        run: uv run pytest tests/ -v
