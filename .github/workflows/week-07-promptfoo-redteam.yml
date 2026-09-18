@@ -1,0 +1,61 @@
+name: Week 7 - Promptfoo Red Team Gate
+
+# Runs the small, static, hand-written adversarial suite (promptfooconfig.yaml) on
+# every push touching this project -- deterministic and cheap, same reasoning as Week
+# 6's fixed CI golden set (see ../../weeks/week-07-promptfoo-red-teaming/concept.md's
+# "Two tiers" section). The broader, generated redteam.promptfooconfig.yaml suite is
+# meant to run manually/periodically, not on every push, so it is not wired in here.
+on:
+  push:
+    paths:
+      - "weeks/week-07-promptfoo-red-teaming/project/**"
+      - ".github/workflows/week-07-promptfoo-redteam.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "weeks/week-07-promptfoo-red-teaming/project/**"
+      - ".github/workflows/week-07-promptfoo-redteam.yml"
+
+jobs:
+  redteam-gate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: weeks/week-07-promptfoo-red-teaming/project
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          working-directory: weeks/week-07-promptfoo-red-teaming/project
+          enable-cache: true
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Promptfoo requires Node >= 22.22; verified locally -- v20 fails with a
+          # version error before even reading the config.
+          node-version: "22"
+
+      - name: Install Python dependencies
+        run: uv sync --frozen
+
+      - name: Start the RAG API under test
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          uv run uvicorn app.main:app --port 8000 &
+          for i in $(seq 1 20); do
+            curl -sf http://127.0.0.1:8000/health && break
+            sleep 1
+          done
+
+      - name: Run static Promptfoo adversarial suite
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        # promptfoo exits 100 the moment any test fails its assertion -- a nonzero exit
+        # that fails this job, and therefore blocks merge once required as a branch
+        # protection status check (same mechanics as Week 6's pytest gate).
+        run: npx promptfoo@latest eval -c promptfooconfig.yaml --no-cache

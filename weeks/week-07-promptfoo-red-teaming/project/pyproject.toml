@@ -1,0 +1,21 @@
+[project]
+name = "promptfoo-red-teaming"
+version = "0.1.0"
+description = "Week 7 project: a small FastAPI RAG endpoint (BM25 + OpenAI, same Northwind API corpus as Week 5/6, plus a deliberately poisoned document and an internal-notes document), red-teamed with Promptfoo for prompt injection, context poisoning, PII extraction, and jailbreaks."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn>=0.32",
+    "openai>=1.50",
+    "rank-bm25>=0.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "httpx>=0.27",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
