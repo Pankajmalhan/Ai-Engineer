@@ -67,13 +67,7 @@ def traced_answer(pipeline: RAGPipeline, question: str) -> PipelineResult:
             input={"question": question, "contexts": contexts},
         ) as generation:
             result = generate_answer(question, contexts)
-            print(f"result: {result}")
-            print(f"result.answer: {result.answer}")
-            print(f"result.input_tokens: {result.input_tokens}")
-            print(f"result.output_tokens: {result.output_tokens}")
-            print(f"result.input_tokens * _INPUT_COST_PER_TOKEN: {result.input_tokens * _INPUT_COST_PER_TOKEN}")
-            print(f"result.output_tokens * _OUTPUT_COST_PER_TOKEN: {result.output_tokens * _OUTPUT_COST_PER_TOKEN}")
-            print(f"trace.trace_id: {trace.trace_id}")
+          
             generation.update(
                 output=result.answer,
                 usage_details={"input": result.input_tokens, "output": result.output_tokens},
