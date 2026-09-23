@@ -33,19 +33,16 @@ jobs:
           working-directory: weeks/week-08-braintrust-release-gating/project
           enable-cache: true
 
-      - name: Install Python dependencies
-        run: uv sync --frozen
-
-      # braintrustdata/eval-action's full input list (whether it takes a root/path
-      # input to scope discovery to this subdirectory, vs. scanning the whole repo)
-      # wasn't confirmed from docs at the time this was written -- check
-      # braintrust.dev/docs/evaluate/run-in-ci before relying on this as-is. `uses:`
-      # steps don't inherit the job's `defaults.run.working-directory` the way `run:`
-      # steps do, so this may need an explicit path input once that's confirmed.
+      # `root` scopes the action to this subdirectory (it defaults to the repo root,
+      # which is why the CLI couldn't find evals/ before); `package_manager: uv` tells
+      # the action to install deps itself via uv, in that root, so the `braintrust`
+      # CLI it shells out to is actually on its PATH.
       - name: Run Braintrust eval
         uses: braintrustdata/eval-action@v2
         with:
           api_key: ${{ secrets.BRAINTRUST_API_KEY }}
           runtime: python
+          root: weeks/week-08-braintrust-release-gating/project
+          package_manager: uv
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
