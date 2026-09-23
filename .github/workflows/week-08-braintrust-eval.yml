@@ -8,7 +8,7 @@ name: Week 8 - Braintrust Release Gate
 # computes or posts the diff by hand.
 on:
   pull_request:
-    branches: [main]
+    branches: [main, env/prod]
     paths:
       - "weeks/week-08-braintrust-release-gating/project/**"
       - ".github/workflows/week-08-braintrust-eval.yml"
