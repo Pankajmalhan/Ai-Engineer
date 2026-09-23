@@ -1,0 +1,51 @@
+name: Week 8 - Braintrust Release Gate
+
+# Runs the Braintrust eval (evals/rag_quality.eval.py) on every PR touching this
+# project, via braintrustdata/eval-action -- per Braintrust's own "Run in CI" docs,
+# this action supports Node, Python, and Go runtimes and automatically posts the
+# resulting score comparison against the base branch's experiment as a PR comment.
+# That comment IS the "release gate" signal for a human reviewer; nothing in this repo
+# computes or posts the diff by hand.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "weeks/week-08-braintrust-release-gating/project/**"
+      - ".github/workflows/week-08-braintrust-eval.yml"
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  braintrust-eval:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: weeks/week-08-braintrust-release-gating/project
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          working-directory: weeks/week-08-braintrust-release-gating/project
+          enable-cache: true
+
+      - name: Install Python dependencies
+        run: uv sync --frozen
+
+      # braintrustdata/eval-action's full input list (whether it takes a root/path
+      # input to scope discovery to this subdirectory, vs. scanning the whole repo)
+      # wasn't confirmed from docs at the time this was written -- check
+      # braintrust.dev/docs/evaluate/run-in-ci before relying on this as-is. `uses:`
+      # steps don't inherit the job's `defaults.run.working-directory` the way `run:`
+      # steps do, so this may need an explicit path input once that's confirmed.
+      - name: Run Braintrust eval
+        uses: braintrustdata/eval-action@v2
+        with:
+          api_key: ${{ secrets.BRAINTRUST_API_KEY }}
+          runtime: python
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
