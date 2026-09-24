@@ -27,7 +27,9 @@ async def _score_collections(question: str, answer: str, contexts: list[str]) ->
     from ragas.llms import llm_factory
     from ragas.metrics.collections import Faithfulness
 
-    llm = llm_factory(OPENAI_MODEL, client=AsyncOpenAI())
+    from braintrust import wrap_openai
+
+    llm = llm_factory(OPENAI_MODEL, client=wrap_openai(AsyncOpenAI()))
     metric = Faithfulness(llm=llm)
     result = await metric.ascore(user_input=question, response=answer, retrieved_contexts=contexts)
     return float(result.value)
