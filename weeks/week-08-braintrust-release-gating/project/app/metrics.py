@@ -2,7 +2,7 @@
 `ragas` version exposes -- see Week 5's app/metrics.py for why this needs a fallback at
 all (RAGAS's metric API has moved more than once across versions). Only one metric this
 week (Faithfulness), since the focus here is Braintrust/Langfuse wiring, not deepening
-RAGAS itself -- see evals/rag_quality.eval.py for how it's used as a Braintrust scorer.
+RAGAS itself -- see evals/eval_rag_quality.py for how it's used as a Braintrust scorer.
 
 _score_collections/_score_legacy are module-level (not nested) specifically so tests
 can monkeypatch them directly, without needing `ragas` installed or an OPENAI_API_KEY.

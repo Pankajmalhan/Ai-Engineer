@@ -1,6 +1,6 @@
 name: Week 8 - Braintrust Release Gate
 
-# Runs the Braintrust eval (evals/rag_quality.eval.py) on every PR touching this
+# Runs the Braintrust eval (evals/eval_rag_quality.py) on every PR touching this
 # project, via braintrustdata/eval-action -- per Braintrust's own "Run in CI" docs,
 # this action supports Node, Python, and Go runtimes and automatically posts the
 # resulting score comparison against the base branch's experiment as a PR comment.

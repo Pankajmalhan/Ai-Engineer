@@ -7,7 +7,7 @@ labeled "correct" document to check retrieval against, so a request counts as a 
 when BM25's top score clears MIN_RELEVANCE_SCORE (i.e. retrieval found something it's
 confident about), not when the *right* document was retrieved -- that stronger,
 ground-truth version of hit rate is only computable offline against a labeled set
-(see evals/rag_quality.eval.py), not on live traffic.
+(see evals/eval_rag_quality.py), not on live traffic.
 
 Import-safe and network-safe without Langfuse credentials: langfuse_enabled() gates
 every call site, mirroring app.llm.openai_available()'s pattern elsewhere in this

@@ -1,6 +1,6 @@
 """Pushes app.dataset.GOLDENS into Braintrust as a versioned Dataset (Braintrust's own
 term for a reusable collection of cases -- distinct from an *experiment*, which is one
-scored run over a dataset; see evals/rag_quality.eval.py for the experiment side).
+scored run over a dataset; see evals/eval_rag_quality.py for the experiment side).
 
 Run with: uv run python -m app.braintrust_push
 Requires BRAINTRUST_API_KEY -- braintrust_available() gates this so importing this
