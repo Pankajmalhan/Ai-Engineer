@@ -1,0 +1,73 @@
+name: Week 9 - Cloud Run Deploy
+
+# Build -> push -> deploy -> confirm parity, gated behind a manual trigger rather than
+# every push: this pipeline changes real infrastructure (a live Cloud Run revision,
+# billed instances), unlike Weeks 6-8's CI which only ever reads/scores things. Requires
+# repo secrets GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_SERVICE_ACCOUNT, GCP_PROJECT_ID
+# (Workload Identity Federation -- no long-lived service-account key committed anywhere)
+# and OPENAI_API_KEY (for the faithfulness half of the parity check).
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  REGION: us-central1
+  REPO_ID: northwind-rag
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: weeks/week-09-cloud-run-deployment/project
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Configure Artifact Registry auth
+        run: gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+
+      - name: Build and push image
+        id: image
+        run: |
+          IMAGE="${REGION}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${REPO_ID}/app:${{ github.sha }}"
+          docker build --platform=linux/amd64 -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform apply
+        working-directory: weeks/week-09-cloud-run-deployment/project/terraform
+        run: |
+          terraform init -input=false
+          terraform apply -input=false -auto-approve \
+            -var="project_id=${{ secrets.GCP_PROJECT_ID }}" \
+            -var="region=${REGION}" \
+            -var="image=${{ steps.image.outputs.image }}"
+
+      - name: Capture load balancer IP
+        id: lb
+        working-directory: weeks/week-09-cloud-run-deployment/project/terraform
+        run: echo "ip=$(terraform output -raw load_balancer_ip)" >> "$GITHUB_OUTPUT"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          working-directory: weeks/week-09-cloud-run-deployment/project
+          enable-cache: true
+
+      - name: Run eval CI suite against the Cloud Run endpoint
+        env:
+          ENDPOINT_URL: http://${{ steps.lb.outputs.ip }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: uv run python -m evals.eval_endpoint_parity
