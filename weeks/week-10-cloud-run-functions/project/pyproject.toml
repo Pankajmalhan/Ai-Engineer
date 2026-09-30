@@ -1,0 +1,21 @@
+[project]
+name = "cloud-run-functions"
+version = "0.1.0"
+description = "Week 10 project: the Northwind API RAG service packaged as a Cloud Run function (2nd gen), fronted by API Gateway, benchmarked cold-start-vs-warm and function-vs-service against Week 9's Cloud Run service."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "functions-framework>=3.8",
+    "openai>=1.50",
+    "rank-bm25>=0.2",
+    "python-dotenv>=1.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "requests>=2.32",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
