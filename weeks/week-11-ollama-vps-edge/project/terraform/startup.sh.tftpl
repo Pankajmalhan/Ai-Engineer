@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# Rendered by Terraform (instance.tf) and run as root by GCE on every boot. Same steps
+# as ../scripts/setup_vps.sh, minus the parts GCP does for us (the VPC firewall replaces
+# ufw) and with the password fetched from Secret Manager instead of an env var.
+#
+# Template rules: `$${` is a Terraform interpolation, so this file uses bare $VAR in bash
+# and only ever uses the interpolations that instance.tf supplies.
+set -euo pipefail
+
+SERVER_NAME="${server_name}"
+OLLAMA_MODEL="${ollama_model}"
+export DEBIAN_FRONTEND=noninteractive
+# GCE's startup-script runner starts us with no HOME. The `ollama` CLI panics without it
+# ("$HOME is not defined", exit 2) -- this killed the first deploy at the model pull.
+export HOME=/root
+
+echo "==> [1/6] Swap (safety net for a 4 GB machine)"
+if ! swapon --show | grep -q .; then
+  fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+  grep -q '^/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
+fi
+
+echo "==> [2/6] Packages"
+apt-get update -y
+apt-get install -y curl zstd pciutils nginx certbot python3-certbot-nginx apache2-utils
+
+echo "==> [3/6] Ollama, bound to loopback"
+command -v ollama >/dev/null || curl -fsSL https://ollama.com/install.sh | sh
+mkdir -p /etc/systemd/system/ollama.service.d
+cat > /etc/systemd/system/ollama.service.d/override.conf <<'CONF'
+[Service]
+Environment="OLLAMA_HOST=127.0.0.1:11434"
+Environment="OLLAMA_KEEP_ALIVE=30m"
+Environment="OLLAMA_NUM_PARALLEL=1"
+Environment="OLLAMA_MAX_LOADED_MODELS=1"
+CONF
+systemctl daemon-reload
+systemctl enable ollama
+systemctl restart ollama
+for _ in $(seq 1 60); do
+  curl -fsS http://127.0.0.1:11434/api/version >/dev/null 2>&1 && break
+  sleep 1
+done
+
+echo "==> [4/6] Model: $OLLAMA_MODEL"
+# Retry: the registry occasionally resets a long download.
+for attempt in 1 2 3; do
+  ollama pull "$OLLAMA_MODEL" && break
+  [ "$attempt" -eq 3 ] && { echo "ollama pull failed after 3 attempts"; exit 1; }
+  echo "pull attempt $attempt failed, retrying in 10s"; sleep 10
+done
+
+echo "==> [5/6] Basic-auth password from Secret Manager (refreshed every boot: rotate by reboot)"
+PASSWORD="$(gcloud secrets versions access latest --secret="${secret_id}" --project="${project_id}")"
+htpasswd -bc /etc/nginx/.ollama_htpasswd "${basic_auth_user}" "$PASSWORD"
+unset PASSWORD
+chown root:www-data /etc/nginx/.ollama_htpasswd
+chmod 640 /etc/nginx/.ollama_htpasswd
+
+echo "==> [6/6] Nginx and TLS for $SERVER_NAME"
+# Only write the HTTP-only config on first boot. Once certbot has issued a certificate it
+# rewrites this file to add the 443 listener; overwriting it on a later boot would
+# silently drop TLS.
+if [ ! -d "/etc/letsencrypt/live/$SERVER_NAME" ]; then
+  rm -f /etc/nginx/sites-enabled/default
+  cat > /etc/nginx/conf.d/ollama.conf <<'NGINX_CONF'
+${nginx_conf}
+NGINX_CONF
+  nginx -t
+  systemctl enable nginx
+  systemctl reload nginx || systemctl restart nginx
+  certbot --nginx -d "$SERVER_NAME" -m "${le_email}" --agree-tos --no-eff-email --redirect --non-interactive
+fi
+systemctl enable --now nginx
+
+echo "OLLAMA_EDGE_READY $SERVER_NAME"

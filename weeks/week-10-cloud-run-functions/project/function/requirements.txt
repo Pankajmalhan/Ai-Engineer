@@ -1,0 +1,4 @@
+functions-framework>=3.8
+openai>=1.50
+rank-bm25>=0.2
+python-dotenv>=1.0

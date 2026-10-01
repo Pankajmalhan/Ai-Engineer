@@ -1,0 +1,23 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# Unlike .gitignore, a bare pattern here only matches at the build context root --
+# it does NOT match app/.env, tests/.env, etc. **/.env is required for that. This
+# was verified the hard way: a stray app/.env got copied straight into a pushed,
+# deployed image because of exactly this gap -- see project README/notes.
+.env
+**/.env
+tests/
+evals/
+terraform/
+.terraform/
+terraform.tfstate*
+.last_image
+scripts/
+.github/
+README.md
+concept.md
+notes.md
+resources.md
+.git/

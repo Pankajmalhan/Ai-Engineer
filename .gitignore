@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .env
+.terraform/
+terraform.tfstate*
+terraform.tfvars
+.last_image
