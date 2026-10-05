@@ -23,6 +23,7 @@ from app.llm import (
 class _FakeOllama(BaseHTTPRequestHandler):
     seen: list[dict] = []
     expected_auth: str | None = None
+    fail_status: int | None = None
 
     def log_message(self, *args):  # silence
         pass
@@ -31,6 +32,11 @@ class _FakeOllama(BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length", 0))
         body = json.loads(self.rfile.read(length))
         type(self).seen.append({"path": self.path, "auth": self.headers.get("Authorization"), "body": body})
+
+        if type(self).fail_status:
+            self.send_response(type(self).fail_status)
+            self.end_headers()
+            return
 
         if type(self).expected_auth and self.headers.get("Authorization") != type(self).expected_auth:
             self.send_response(401)
@@ -60,6 +66,7 @@ class _FakeOllama(BaseHTTPRequestHandler):
 def fake_ollama():
     _FakeOllama.seen = []
     _FakeOllama.expected_auth = None
+    _FakeOllama.fail_status = None
     server = HTTPServer(("127.0.0.1", 0), _FakeOllama)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -143,3 +150,52 @@ def test_no_credentials_configured_sends_no_basic_header(fake_ollama):
 def test_openai_client_uses_default_endpoint():
     client = build_client(LLMConfig(provider="openai", model="gpt-4o-mini", api_key="sk-test"))
     assert "api.openai.com" in str(client.base_url)
+
+
+def test_model_override_beats_env_for_both_providers():
+    env = {"OLLAMA_MODEL": "llama3.2:3b", "OPENAI_MODEL": "gpt-4o-mini"}
+    assert load_config("ollama", env=env, model="qwen2.5:14b-instruct").model == "qwen2.5:14b-instruct"
+    assert load_config("openai", env=env, model="gpt-4o").model == "gpt-4o"
+    assert load_config("ollama", env=env).model == "llama3.2:3b"  # no override -> env
+
+
+def test_strip_reasoning_removes_think_blocks_only():
+    from app.llm import strip_reasoning
+
+    assert strip_reasoning("<think>\nthe context says 30\n</think>\n30 days.") == "30 days."
+    assert strip_reasoning("<think>a</think>X<think>b</think> Y") == "X Y"
+    assert strip_reasoning("  plain answer  ") == "plain answer"
+
+
+def test_generate_answer_strips_reasoning_from_model_output():
+    from types import SimpleNamespace
+
+    from app.llm import LLMConfig, generate_answer
+
+    reply = SimpleNamespace(
+        choices=[SimpleNamespace(message=SimpleNamespace(content="<think>hmm</think>30 days."))],
+        usage=SimpleNamespace(prompt_tokens=10, completion_tokens=9),
+    )
+    client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=lambda **kw: reply)))
+    result = generate_answer("q", ["c"], config=LLMConfig(provider="ollama", model="qwen3:8b", base_url="http://x"), client=client)
+    assert result.answer == "30 days."
+
+
+def test_max_retries_flows_from_env_into_both_clients():
+    for provider in ("openai", "ollama"):
+        cfg = load_config(provider, env={"LLM_MAX_RETRIES": "0", "OLLAMA_BASE_URL": "http://x", "OPENAI_API_KEY": "sk-test"})
+        assert cfg.max_retries == 0
+        assert build_client(cfg).max_retries == 0
+    default = load_config("ollama", env={})
+    assert default.max_retries is None and build_client(default).max_retries == 2  # SDK default
+
+
+def test_zero_retries_surfaces_a_503_instead_of_hiding_it(fake_ollama):
+    from openai import InternalServerError
+
+    url, handler = fake_ollama
+    handler.fail_status = 503
+    cfg = LLMConfig(provider="ollama", model="m", base_url=url, max_retries=0)
+    with pytest.raises(InternalServerError):
+        generate_answer("q", ["c"], config=cfg)
+    assert len(handler.seen) == 1  # no retry happened

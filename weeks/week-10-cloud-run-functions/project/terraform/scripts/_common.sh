@@ -18,6 +18,11 @@ LAST_IMAGE_FILE="$TERRAFORM_DIR/.last_image"
 # values than the last apply.
 tf_vars() {
   local args=(-var="project_id=${PROJECT_ID}" -var="region=${REGION}" -var="artifact_repo_id=${REPO_ID}")
+  # ENABLE_LANGFUSE=true sends traces from BOTH the function and the service to Langfuse
+  # (needs the langfuse-public-key / langfuse-secret-key secrets; see Week 12's README).
+  if [[ "${ENABLE_LANGFUSE:-}" == "true" || "${ENABLE_LANGFUSE:-}" == "1" ]]; then
+    args+=(-var="enable_langfuse=true" -var="langfuse_base_url=${LANGFUSE_BASE_URL:-https://cloud.langfuse.com}")
+  fi
   if [[ -f "$LAST_IMAGE_FILE" ]]; then
     args+=(-var="service_image=$(cat "$LAST_IMAGE_FILE")")
   fi

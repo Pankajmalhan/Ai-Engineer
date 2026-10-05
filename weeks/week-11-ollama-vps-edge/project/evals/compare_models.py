@@ -5,6 +5,11 @@ faithfulness (judged by OpenAI for both), latency, and tokens/sec.
     uv run python -m evals.compare_models --providers openai ollama --out results.json
     uv run python -m evals.compare_models --providers ollama --skip-faithfulness   # no judge cost
 
+    # several models on the same server in one run: provider[:model] (the model may itself
+    # contain colons, e.g. ollama:qwen2.5:14b-instruct). Pull them first: scripts/pull_model.sh
+    uv run python -m evals.compare_models --questions extended \
+        --providers openai ollama:llama3.2:3b ollama:qwen2.5:7b-instruct ollama:qwen2.5:14b-instruct
+
 Faithfulness costs one OpenAI judge call per golden per provider. Latency is wall-clock
 per request as this machine sees it -- for Ollama that includes the network hop to the
 VPS and Nginx, which is the number a real client would experience.
@@ -21,7 +26,7 @@ from typing import Callable
 
 from dotenv import load_dotenv
 
-from app.dataset import GOLDENS, EvalSample
+from app.dataset import EXTENDED_GOLDENS, GOLDENS, EvalSample
 from app.llm import load_config
 from app.pipeline import RAGPipeline, PipelineResult
 
@@ -110,14 +115,27 @@ def format_table(reports: list[ProviderReport]) -> str:
     return "\n".join(lines)
 
 
-def _default_pipeline_factory(provider: str) -> RAGPipeline:
-    return RAGPipeline(llm_config=load_config(provider))
+def parse_spec(spec: str) -> tuple[str, str | None]:
+    """'ollama:qwen2.5:14b-instruct' -> ('ollama', 'qwen2.5:14b-instruct'); 'openai' -> ('openai', None)."""
+    provider, _, model = spec.partition(":")
+    return provider, (model or None)
+
+
+def _default_pipeline_factory(spec: str) -> RAGPipeline:
+    provider, model = parse_spec(spec)
+    return RAGPipeline(llm_config=load_config(provider, model=model))
 
 
 def main(argv: list[str] | None = None) -> int:
     load_dotenv()
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--providers", nargs="+", default=["openai", "ollama"])
+    parser.add_argument("--providers", nargs="+", default=["openai", "ollama"], help="provider or provider:model specs")
+    parser.add_argument(
+        "--questions",
+        choices=["base", "extended"],
+        default="base",
+        help="base = 8 goldens; extended = 24 (adds paraphrases) for a steadier faithfulness mean",
+    )
     parser.add_argument("--out", help="write full per-case results as JSON")
     parser.add_argument("--skip-faithfulness", action="store_true")
     args = parser.parse_args(argv)
@@ -128,7 +146,8 @@ def main(argv: list[str] | None = None) -> int:
 
         scorer = score_faithfulness
 
-    reports = [run_provider(p, GOLDENS, _default_pipeline_factory, scorer) for p in args.providers]
+    goldens = EXTENDED_GOLDENS if args.questions == "extended" else GOLDENS
+    reports = [run_provider(p, goldens, _default_pipeline_factory, scorer) for p in args.providers]
     print(format_table(reports))
     if args.out:
         with open(args.out, "w") as f:

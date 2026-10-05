@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Rendered by Terraform (instance.tf) and run as root by GCE on every boot. Same steps
 # as ../scripts/setup_vps.sh, minus the parts GCP does for us (the VPC firewall replaces
-# ufw) and with the password fetched from Secret Manager instead of an env var.
+# ufw) and with the password fetched from Secret Manager instead of an env var. When the
+# VM has a GPU (expect_gpu) it also installs the NVIDIA driver and proves Ollama is using it.
 #
 # Template rules: `$${` is a Terraform interpolation, so this file uses bare $VAR in bash
-# and only ever uses the interpolations that instance.tf supplies.
+# (never the braced form) and only the interpolations instance.tf supplies. Lines starting with
+# a percent sign and a brace are Terraform template directives (if/else/endif), not bash.
 set -euo pipefail
 
 SERVER_NAME="${server_name}"
@@ -13,26 +15,58 @@ export DEBIAN_FRONTEND=noninteractive
 # GCE's startup-script runner starts us with no HOME. The `ollama` CLI panics without it
 # ("$HOME is not defined", exit 2) -- this killed the first deploy at the model pull.
 export HOME=/root
+mkdir -p /var/lib/ollama-edge
 
-echo "==> [1/6] Swap (safety net for a 4 GB machine)"
+echo "==> [1/8] Swap (safety net)"
 if ! swapon --show | grep -q .; then
   fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
   grep -q '^/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
 fi
 
-echo "==> [2/6] Packages"
+echo "==> [2/8] Packages"
 apt-get update -y
 apt-get install -y curl zstd pciutils nginx certbot python3-certbot-nginx apache2-utils
 
-echo "==> [3/6] Ollama, bound to loopback"
+%{ if expect_gpu ~}
+echo "==> [3/8] NVIDIA driver (GPU machine)"
+# Secure Boot is off for GPU VMs (see variables.tf): the DKMS-built kernel module is unsigned.
+if ! nvidia-smi >/dev/null 2>&1; then
+  if [ -f /var/lib/ollama-edge/driver-installed ]; then
+    echo "GPU_DRIVER_FAILED: the driver was installed on an earlier boot but nvidia-smi still fails."
+    lspci | grep -i nvidia || echo "No NVIDIA device is visible to the VM (GPU quota, zone, or machine type?)."
+    exit 1
+  fi
+  curl -fsSL -o /tmp/cuda-keyring.deb https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
+  dpkg -i /tmp/cuda-keyring.deb
+  apt-get update -y
+  apt-get install -y "linux-headers-$(uname -r)" cuda-drivers
+  touch /var/lib/ollama-edge/driver-installed
+  modprobe nvidia || true
+  if ! nvidia-smi >/dev/null 2>&1; then
+    echo "Driver installed; rebooting once to load it. This script runs again on the next boot."
+    systemctl reboot
+    sleep 300
+    exit 0
+  fi
+fi
+nvidia-smi
+%{ else ~}
+echo "==> [3/8] No GPU on this machine type: CPU inference"
+%{ endif ~}
+
+echo "==> [4/8] Ollama, bound to loopback"
 command -v ollama >/dev/null || curl -fsSL https://ollama.com/install.sh | sh
 mkdir -p /etc/systemd/system/ollama.service.d
 cat > /etc/systemd/system/ollama.service.d/override.conf <<'CONF'
 [Service]
 Environment="OLLAMA_HOST=127.0.0.1:11434"
 Environment="OLLAMA_KEEP_ALIVE=30m"
-Environment="OLLAMA_NUM_PARALLEL=1"
+Environment="OLLAMA_NUM_PARALLEL=${num_parallel}"
 Environment="OLLAMA_MAX_LOADED_MODELS=1"
+Environment="OLLAMA_CONTEXT_LENGTH=${context_length}"
+%{ if expect_gpu ~}
+Environment="OLLAMA_FLASH_ATTENTION=1"
+%{ endif ~}
 CONF
 systemctl daemon-reload
 systemctl enable ollama
@@ -42,7 +76,62 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 
-echo "==> [4/6] Model: $OLLAMA_MODEL"
+# Diagnostic tool, also used from your laptop over IAP (see `terraform output gpu_check_command`):
+#   sudo ollama-gpu-check          nvidia-smi + is the model fully in VRAM?  (exit 1 if not)
+#   sudo ollama-gpu-check --load   ...plus peak GPU utilisation and tokens/s during a generation
+cat > /usr/local/bin/ollama-gpu-check <<'GPUCHECK'
+#!/usr/bin/env bash
+set -uo pipefail
+MODEL="${ollama_model}"
+API=http://127.0.0.1:11434
+
+echo "== nvidia-smi"
+nvidia-smi --query-gpu=name,driver_version,memory.total,memory.used,utilization.gpu --format=csv || { echo "nvidia-smi failed: no usable GPU driver"; exit 1; }
+
+# Make sure the model is loaded so /api/ps has something to report.
+curl -s "$API/api/generate" -d '{"model":"'"$MODEL"'","prompt":"hi","stream":false,"options":{"num_predict":1}}' > /dev/null
+
+echo "== where the model is placed (/api/ps)"
+python3 - <<'PY'
+import json, sys, urllib.request
+models = json.load(urllib.request.urlopen("http://127.0.0.1:11434/api/ps")).get("models", [])
+if not models:
+    print("no model is loaded"); sys.exit(2)
+ok = True
+for m in models:
+    size, vram = m.get("size", 0), m.get("size_vram", 0)
+    pct = 100.0 * vram / size if size else 0.0
+    print(m["name"] + ": " + format(pct, ".0f") + "% in VRAM (" + format(vram / 1e9, ".2f") + " of " + format(size / 1e9, ".2f") + " GB)")
+    ok = ok and pct >= 99.0
+print("PLACEMENT: fully on GPU" if ok else "PLACEMENT: NOT fully on GPU (CPU is doing part of the work)")
+sys.exit(0 if ok else 1)
+PY
+RC=$?
+
+if [ "$#" -ge 1 ] && [ "$1" = "--load" ]; then
+  echo "== load test: one 200-token generation while sampling GPU utilisation"
+  curl -s "$API/api/generate" -d '{"model":"'"$MODEL"'","prompt":"Write a 150 word story about a robot learning to paint.","stream":false,"options":{"num_predict":200}}' > /tmp/gpu_load.json &
+  PID=$!
+  MAXU=0
+  while kill -0 "$PID" 2>/dev/null; do
+    U=$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits | head -1 | tr -d ' ')
+    if [ "$U" -gt "$MAXU" ]; then MAXU="$U"; fi
+    sleep 0.3
+  done
+  python3 - <<'PY'
+import json
+d = json.load(open("/tmp/gpu_load.json"))
+n = 1e9
+print("prefill: " + str(d["prompt_eval_count"]) + " tokens in " + format(d["prompt_eval_duration"] / n, ".2f") + " s")
+print("decode:  " + str(d["eval_count"]) + " tokens in " + format(d["eval_duration"] / n, ".2f") + " s = " + format(d["eval_count"] / (d["eval_duration"] / n), ".1f") + " tokens/s")
+PY
+  echo "peak GPU utilisation during generation: $MAXU%"
+fi
+exit "$RC"
+GPUCHECK
+chmod +x /usr/local/bin/ollama-gpu-check
+
+echo "==> [5/8] Model: $OLLAMA_MODEL"
 # Retry: the registry occasionally resets a long download.
 for attempt in 1 2 3; do
   ollama pull "$OLLAMA_MODEL" && break
@@ -50,14 +139,14 @@ for attempt in 1 2 3; do
   echo "pull attempt $attempt failed, retrying in 10s"; sleep 10
 done
 
-echo "==> [5/6] Basic-auth password from Secret Manager (refreshed every boot: rotate by reboot)"
+echo "==> [6/8] Basic-auth password from Secret Manager (refreshed every boot: rotate by reboot)"
 PASSWORD="$(gcloud secrets versions access latest --secret="${secret_id}" --project="${project_id}")"
 htpasswd -bc /etc/nginx/.ollama_htpasswd "${basic_auth_user}" "$PASSWORD"
 unset PASSWORD
 chown root:www-data /etc/nginx/.ollama_htpasswd
 chmod 640 /etc/nginx/.ollama_htpasswd
 
-echo "==> [6/6] Nginx and TLS for $SERVER_NAME"
+echo "==> [7/8] Nginx and TLS for $SERVER_NAME"
 # Only write the HTTP-only config on first boot. Once certbot has issued a certificate it
 # rewrites this file to add the 443 listener; overwriting it on a later boot would
 # silently drop TLS.
@@ -72,5 +161,16 @@ NGINX_CONF
   certbot --nginx -d "$SERVER_NAME" -m "${le_email}" --agree-tos --no-eff-email --redirect --non-interactive
 fi
 systemctl enable --now nginx
+
+%{ if expect_gpu ~}
+echo "==> [8/8] Proving Ollama uses the GPU (non-fatal here; scripts/04_wait_and_verify.sh enforces it)"
+if /usr/local/bin/ollama-gpu-check; then
+  echo "GPU_VERIFIED"
+else
+  echo "GPU_CHECK_FAILED: see the output above"
+fi
+%{ else ~}
+echo "==> [8/8] CPU machine: no GPU check"
+%{ endif ~}
 
 echo "OLLAMA_EDGE_READY $SERVER_NAME"

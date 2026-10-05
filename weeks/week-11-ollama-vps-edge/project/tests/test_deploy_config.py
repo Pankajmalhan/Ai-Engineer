@@ -52,7 +52,7 @@ def test_setup_does_not_hardcode_credentials():
     assert re.search(r'BASIC_AUTH_PASSWORD="\$\{BASIC_AUTH_PASSWORD:\?', SETUP)
 
 
-@pytest.mark.parametrize("script", ["setup_vps.sh", "verify_endpoint.sh"])
+@pytest.mark.parametrize("script", ["setup_vps.sh", "verify_endpoint.sh", "pull_model.sh"])
 def test_scripts_are_valid_bash_and_strict(script):
     path = ROOT / "scripts" / script
     assert "set -euo pipefail" in path.read_text()
@@ -62,7 +62,7 @@ def test_scripts_are_valid_bash_and_strict(script):
 @pytest.mark.skipif(shutil.which("nginx") is None, reason="nginx not installed locally")
 def test_nginx_conf_parses(tmp_path):
     conf = tmp_path / "nginx.conf"
-    rendered = NGINX.replace("__SERVER_NAME__", "example.test")
+    rendered = NGINX.replace("__SERVER_NAME__", "example.test").replace("__RATE__", "5").replace("__BURST__", "10")
     conf.write_text(
         f"events {{}}\nhttp {{\n{rendered}\n}}\n".replace(
             "/etc/nginx/.ollama_htpasswd", str(tmp_path / "htpasswd")
@@ -70,3 +70,8 @@ def test_nginx_conf_parses(tmp_path):
     )
     (tmp_path / "htpasswd").write_text("u:{PLAIN}p\n")
     subprocess.run(["nginx", "-t", "-c", str(conf), "-p", str(tmp_path)], check=True)
+
+
+def test_rate_limit_tokens_are_substituted_by_the_manual_setup_script_too():
+    assert "__RATE__" in NGINX and "__BURST__" in NGINX
+    assert "s/__RATE__/" in SETUP and "s/__BURST__/" in SETUP

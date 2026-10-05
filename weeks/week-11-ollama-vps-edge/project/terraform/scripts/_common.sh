@@ -14,7 +14,8 @@ TERRAFORM_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PASSWORD_FILE="$TERRAFORM_DIR/.ollama_password"
 
 # Optional extras, passed straight through when set:
-#   MACHINE_TYPE, OLLAMA_MODEL, DOMAIN_NAME, ALLOWED_SOURCE_RANGES (JSON list, e.g.
+#   MACHINE_TYPE (default g2-standard-4 = 1x L4 GPU; e2-medium for CPU-only), GPU_TYPE, GPU_COUNT,
+#   USE_SPOT (true|false), NGINX_RATE_LIMIT_PER_SECOND, NGINX_RATE_LIMIT_BURST, BOOT_DISK_GB, OLLAMA_NUM_PARALLEL, OLLAMA_MODEL, DOMAIN_NAME, ALLOWED_SOURCE_RANGES (JSON list, e.g.
 #   '["203.0.113.7/32"]'), ADMIN_MEMBERS (JSON list, e.g. '["user:you@example.com"]')
 tf_vars() {
   local args=(
@@ -26,6 +27,13 @@ tf_vars() {
     -var="basic_auth_user=${BASIC_AUTH_USER}"
   )
   [[ -n "${MACHINE_TYPE:-}" ]] && args+=(-var="machine_type=${MACHINE_TYPE}")
+  [[ -n "${GPU_TYPE:-}" ]] && args+=(-var="gpu_type=${GPU_TYPE}")
+  [[ -n "${GPU_COUNT:-}" ]] && args+=(-var="gpu_count=${GPU_COUNT}")
+  [[ -n "${USE_SPOT:-}" ]] && args+=(-var="use_spot=${USE_SPOT}")
+  [[ -n "${BOOT_DISK_GB:-}" ]] && args+=(-var="boot_disk_gb=${BOOT_DISK_GB}")
+  [[ -n "${OLLAMA_NUM_PARALLEL:-}" ]] && args+=(-var="ollama_num_parallel=${OLLAMA_NUM_PARALLEL}")
+  [[ -n "${NGINX_RATE_LIMIT_PER_SECOND:-}" ]] && args+=(-var="nginx_rate_limit_per_second=${NGINX_RATE_LIMIT_PER_SECOND}")
+  [[ -n "${NGINX_RATE_LIMIT_BURST:-}" ]] && args+=(-var="nginx_rate_limit_burst=${NGINX_RATE_LIMIT_BURST}")
   [[ -n "${OLLAMA_MODEL:-}" ]] && args+=(-var="ollama_model=${OLLAMA_MODEL}")
   [[ -n "${DOMAIN_NAME:-}" ]] && args+=(-var="domain_name=${DOMAIN_NAME}")
   [[ -n "${ALLOWED_SOURCE_RANGES:-}" ]] && args+=(-var="allowed_source_ranges=${ALLOWED_SOURCE_RANGES}")

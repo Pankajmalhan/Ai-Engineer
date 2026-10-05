@@ -22,3 +22,8 @@ class BM25Retriever:
         scores = self._bm25.get_scores(_tokenize(query))
         ranked = sorted(range(len(self.documents)), key=lambda i: scores[i], reverse=True)
         return [self.documents[i] for i in ranked[:k]]
+
+    def top_score(self, query: str) -> float:
+        """Max BM25 score across the corpus -- a ground-truth-free proxy for "did retrieval
+        find anything confidently relevant", used by app/tracing.py's retrieval_hit_rate."""
+        return float(max(self._bm25.get_scores(_tokenize(query))))

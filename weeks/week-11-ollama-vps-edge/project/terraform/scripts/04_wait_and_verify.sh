@@ -23,9 +23,18 @@ for i in $(seq 1 90); do
   sleep 10
 done
 
-BASIC_AUTH_USER="$BASIC_AUTH_USER" BASIC_AUTH_PASSWORD="$(cat "$PASSWORD_FILE")" \
+EXPECT_GPU=0
+[[ "$(terraform -chdir="$TERRAFORM_DIR" output -raw gpu_expected)" == "true" ]] && EXPECT_GPU=1
+
+EXPECT_GPU="$EXPECT_GPU" BASIC_AUTH_USER="$BASIC_AUTH_USER" BASIC_AUTH_PASSWORD="$(cat "$PASSWORD_FILE")" \
   OLLAMA_MODEL="${OLLAMA_MODEL:-llama3.2:3b}" \
   "$TERRAFORM_DIR/../scripts/verify_endpoint.sh" "$BASE_URL"
+
+echo
+if [[ "$EXPECT_GPU" == "1" ]]; then
+  echo
+  echo "GPU machine: for utilisation proof from inside the VM run ./06_gpu_proof.sh"
+fi
 
 echo
 echo "Add to project/.env:"

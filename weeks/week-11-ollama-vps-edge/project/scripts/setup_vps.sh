@@ -17,6 +17,8 @@ LE_EMAIL="${LE_EMAIL:?set LE_EMAIL (email for certificate expiry notices)}"
 BASIC_AUTH_USER="${BASIC_AUTH_USER:?set BASIC_AUTH_USER}"
 BASIC_AUTH_PASSWORD="${BASIC_AUTH_PASSWORD:?set BASIC_AUTH_PASSWORD}"
 OLLAMA_MODEL="${OLLAMA_MODEL:-llama3.2:3b}"
+RATE_LIMIT_RPS="${RATE_LIMIT_RPS:-5}"
+RATE_LIMIT_BURST="${RATE_LIMIT_BURST:-10}"
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -67,7 +69,7 @@ chmod 640 /etc/nginx/.ollama_htpasswd
 
 echo "==> Nginx site"
 rm -f /etc/nginx/sites-enabled/default
-sed "s/__SERVER_NAME__/${SERVER_NAME}/g" "$PROJECT_DIR/deploy/ollama.nginx.conf" \
+sed -e "s/__SERVER_NAME__/${SERVER_NAME}/g" -e "s/__RATE__/${RATE_LIMIT_RPS}/g" -e "s/__BURST__/${RATE_LIMIT_BURST}/g" "$PROJECT_DIR/deploy/ollama.nginx.conf" \
   > /etc/nginx/conf.d/ollama.conf
 nginx -t
 systemctl reload nginx

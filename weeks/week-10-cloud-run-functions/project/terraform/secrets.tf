@@ -12,7 +12,7 @@ data "google_compute_default_service_account" "default" {
 }
 
 resource "google_secret_manager_secret_iam_member" "reads_secret" {
-  for_each  = { for e in var.secret_env_vars : e.name => e }
+  for_each  = { for e in local.secret_env_vars : e.name => e }
   secret_id = each.value.secret
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${data.google_compute_default_service_account.default.email}"

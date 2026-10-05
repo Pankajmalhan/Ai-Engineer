@@ -39,7 +39,15 @@ resource "google_cloud_run_v2_service" "svc" {
       }
 
       dynamic "env" {
-        for_each = { for e in var.secret_env_vars : e.name => e }
+        for_each = local.service_env_vars
+        content {
+          name  = env.key
+          value = env.value
+        }
+      }
+
+      dynamic "env" {
+        for_each = { for e in local.secret_env_vars : e.name => e }
         content {
           name = env.value.name
           value_source {

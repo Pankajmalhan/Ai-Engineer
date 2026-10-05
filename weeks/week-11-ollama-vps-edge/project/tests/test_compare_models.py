@@ -65,3 +65,50 @@ def test_main_writes_json(monkeypatch, tmp_path, capsys):
     data = json.loads(out.read_text())
     assert [r["provider"] for r in data] == ["openai", "ollama"]
     assert len(data[0]["cases"]) == len(GOLDENS)
+
+
+def test_parse_spec_handles_models_that_contain_colons():
+    from evals.compare_models import parse_spec
+
+    assert parse_spec("openai") == ("openai", None)
+    assert parse_spec("ollama") == ("ollama", None)
+    assert parse_spec("ollama:llama3.2:3b") == ("ollama", "llama3.2:3b")
+    assert parse_spec("ollama:qwen2.5:14b-instruct") == ("ollama", "qwen2.5:14b-instruct")
+
+
+def test_several_models_on_one_provider_become_separate_rows(monkeypatch):
+    def fake(question, contexts, config=None, client=None):
+        return GenerationResult(answer=config.model, input_tokens=1, output_tokens=1)
+
+    monkeypatch.setattr("app.pipeline.generate_answer", fake)
+    reports = [
+        run_provider(spec, GOLDENS[:2], compare_models._default_pipeline_factory, scorer=None)
+        for spec in ("ollama:llama3.2:3b", "ollama:qwen2.5:14b-instruct")
+    ]
+    assert [r.model for r in reports] == ["llama3.2:3b", "qwen2.5:14b-instruct"]
+    assert all(r.provider == "ollama" for r in reports)
+
+
+def test_extended_goldens_triple_the_set_and_keep_ground_truth():
+    from app.dataset import EXTENDED_GOLDENS
+
+    assert len(EXTENDED_GOLDENS) == 3 * len(GOLDENS)
+    assert len({g.question for g in EXTENDED_GOLDENS}) == len(EXTENDED_GOLDENS)  # no duplicates
+    by_doc = {g.source_doc_id: g.reference for g in GOLDENS}
+    assert all(g.reference == by_doc[g.source_doc_id] for g in EXTENDED_GOLDENS)
+    # every paraphrase still retrieves its source document with real BM25
+    retriever = BM25Retriever()
+    for g in EXTENDED_GOLDENS:
+        assert g.source_doc_id in [d.id for d in retriever.retrieve(g.question, k=3)], g.question
+
+
+def test_questions_flag_selects_the_extended_set(monkeypatch, tmp_path):
+    seen = []
+
+    def factory(spec):
+        monkeypatch.setattr("app.pipeline.generate_answer", lambda q, c, config=None, client=None: seen.append(q) or GenerationResult("a", 1, 1))
+        return RAGPipeline(retriever=BM25Retriever(), llm_config=LLMConfig(provider="ollama", model="m"))
+
+    monkeypatch.setattr(compare_models, "_default_pipeline_factory", factory)
+    compare_models.main(["--providers", "ollama", "--skip-faithfulness", "--questions", "extended"])
+    assert len(seen) == 24

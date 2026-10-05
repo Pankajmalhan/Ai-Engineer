@@ -1,3 +1,25 @@
+locals {
+  # var.secret_env_vars plus, when enable_langfuse is set, the two Langfuse credentials.
+  secret_env_vars = concat(
+    var.secret_env_vars,
+    var.enable_langfuse ? [
+      { name = "LANGFUSE_PUBLIC_KEY", secret_version = "projects/${var.project_id}/secrets/langfuse-public-key/versions/latest" },
+      { name = "LANGFUSE_SECRET_KEY", secret_version = "projects/${var.project_id}/secrets/langfuse-secret-key/versions/latest" },
+    ] : []
+  )
+
+  # DEPLOY_TARGET becomes the Langfuse tag; LANGFUSE_TRACING_ENVIRONMENT becomes Langfuse's
+  # `environment` (lowercase alphanumerics, - and _ only) -- together they let alerts and
+  # dashboards be filtered per deployment (see app/tracing.py).
+  plain_env_vars = merge(
+    {
+      DEPLOY_TARGET                = "cloud-run-service"
+      LANGFUSE_TRACING_ENVIRONMENT = "cloud-run-service"
+    },
+    var.enable_langfuse ? { LANGFUSE_BASE_URL = var.langfuse_base_url } : {}
+  )
+}
+
 # google-beta + launch_stage=BETA are required specifically for the scaling block's
 # cpu_utilization/concurrency_utilization fields (still Beta in the provider as of this
 # writing -- see terraform-provider-google's cloud_run_v2_service docs).
@@ -49,12 +71,12 @@ resource "google_cloud_run_v2_service" "app" {
       }
 
       # Keyed by name (not a plain list) so Terraform's diff is stable per secret --
-      # adding/removing one entry in var.secret_env_vars only touches that entry, and
+      # adding/removing one entry in var.secret_env_vars only touches that entry (local.secret_env_vars = var.secret_env_vars plus the Langfuse pair), and
       # two entries accidentally given the same name collapse to one at plan time
       # instead of both reaching the API (which Cloud Run would reject outright; see
       # the reserved-env-name error this project already hit once for PORT).
       dynamic "env" {
-        for_each = { for e in var.secret_env_vars : e.name => e }
+        for_each = { for e in local.secret_env_vars : e.name => e }
         content {
           name = env.value.name
           value_source {
@@ -63,6 +85,15 @@ resource "google_cloud_run_v2_service" "app" {
               version = split("/versions/", env.value.secret_version)[1]
             }
           }
+        }
+      }
+
+      # Plain (non-secret) env: which deployment this is, for Langfuse tags/environment.
+      dynamic "env" {
+        for_each = local.plain_env_vars
+        content {
+          name  = env.key
+          value = env.value
         }
       }
     }

@@ -36,9 +36,9 @@ resource "google_compute_security_policy" "app" {
       }
     }
     rate_limit_options {
-      conform_action   = "allow"
-      exceed_action    = "deny(429)"
-      enforce_on_key   = "IP"
+      conform_action = "allow"
+      exceed_action  = "deny(429)"
+      enforce_on_key = "IP"
       rate_limit_threshold {
         count        = 100
         interval_sec = 60

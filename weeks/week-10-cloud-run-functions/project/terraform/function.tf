@@ -27,11 +27,14 @@ resource "google_cloudfunctions2_function" "rag" {
     available_memory   = "512M"
     timeout_seconds    = 60
 
+    # Not secret: which deployment this is (Langfuse tag + environment), and the Langfuse URL.
+    environment_variables = local.function_env_vars
+
     # Same shape Week 9's cloud_run.tf uses for its `env` dynamic block: keyed by
     # name so two entries never silently collide, and each secret's IAM grant lives
     # in secrets.tf, not here -- this block only wires the reference.
     dynamic "secret_environment_variables" {
-      for_each = { for e in var.secret_env_vars : e.name => e }
+      for_each = { for e in local.secret_env_vars : e.name => e }
       content {
         key        = secret_environment_variables.value.name
         project_id = var.project_id

@@ -15,6 +15,7 @@ tests and the compare harness can build several configs in one process.
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -53,28 +54,50 @@ class LLMConfig:
     api_key: str | None = None
     basic_auth_user: str | None = None
     basic_auth_password: str | None = None
+    max_retries: int | None = None  # None = the SDK default (2); LLM_MAX_RETRIES overrides
 
 
-def load_config(provider: str | None = None, env: dict[str, str] | None = None) -> LLMConfig:
+def load_config(
+    provider: str | None = None,
+    env: dict[str, str] | None = None,
+    model: str | None = None,
+) -> LLMConfig:
+    """`model` overrides OLLAMA_MODEL / OPENAI_MODEL -- how the compare harness tries
+    several models against the same endpoint in one run."""
     env = os.environ if env is None else env
     provider = (provider or env.get("LLM_PROVIDER", "openai")).lower()
     if provider not in PROVIDERS:
         raise ValueError(f"LLM_PROVIDER must be one of {PROVIDERS}, got {provider!r}")
 
+    retries = env.get("LLM_MAX_RETRIES")
+    max_retries = int(retries) if retries not in (None, "") else None
+
     if provider == "openai":
         return LLMConfig(
             provider="openai",
-            model=env.get("OPENAI_MODEL", DEFAULT_OPENAI_MODEL),
+            model=model or env.get("OPENAI_MODEL", DEFAULT_OPENAI_MODEL),
             api_key=env.get("OPENAI_API_KEY"),
+            max_retries=max_retries,
         )
 
     return LLMConfig(
         provider="ollama",
-        model=env.get("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL),
+        model=model or env.get("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL),
         base_url=env.get("OLLAMA_BASE_URL", DEFAULT_OLLAMA_URL).rstrip("/"),
         basic_auth_user=env.get("OLLAMA_BASIC_AUTH_USER") or None,
         basic_auth_password=env.get("OLLAMA_BASIC_AUTH_PASSWORD") or None,
+        max_retries=max_retries,
     )
+
+
+_THINK_BLOCK = re.compile(r"<think>.*?</think>", re.DOTALL)
+
+
+def strip_reasoning(text: str) -> str:
+    """Reasoning models (Qwen3, DeepSeek-R1 style) can emit <think>...</think> before the
+    answer. That text is not part of the answer: it inflates the output, and RAGAS would
+    score the model's private reasoning as if it were a claim made to the customer."""
+    return _THINK_BLOCK.sub("", text).strip()
 
 
 @dataclass
@@ -87,8 +110,9 @@ class GenerationResult:
 def build_client(config: LLMConfig):
     from openai import OpenAI
 
+    retry_kwargs = {} if config.max_retries is None else {"max_retries": config.max_retries}
     if config.provider == "openai":
-        return OpenAI(api_key=config.api_key)
+        return OpenAI(api_key=config.api_key, **retry_kwargs)
 
     auth = None
     if config.basic_auth_user is not None:
@@ -97,6 +121,7 @@ def build_client(config: LLMConfig):
         base_url=f"{config.base_url}/v1",
         api_key="ollama",  # required by the SDK, ignored by Ollama; overridden by `auth`
         http_client=httpx.Client(auth=auth, timeout=OLLAMA_TIMEOUT),
+        **retry_kwargs,
     )
 
 
@@ -124,7 +149,7 @@ def generate_answer(
     )
     usage = response.usage
     return GenerationResult(
-        answer=(response.choices[0].message.content or "").strip(),
+        answer=strip_reasoning(response.choices[0].message.content or ""),
         input_tokens=getattr(usage, "prompt_tokens", 0) or 0,
         output_tokens=getattr(usage, "completion_tokens", 0) or 0,
     )

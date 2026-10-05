@@ -12,12 +12,12 @@
 data "google_compute_default_service_account" "default" {
 }
 
-# One grant per secret in var.secret_env_vars -- keyed by name for the same reason
+# One grant per secret in local.secret_env_vars (cloud_run.tf) -- keyed by name for the same reason
 # as cloud_run.tf's dynamic "env" block: stable per-entry diffs, and two entries
 # referencing the same secret collapse to one grant instead of erroring on a
 # duplicate IAM binding.
 resource "google_secret_manager_secret_iam_member" "cloud_run_reads_secret" {
-  for_each  = { for e in var.secret_env_vars : e.name => e }
+  for_each  = { for e in local.secret_env_vars : e.name => e }
   secret_id = split("/versions/", each.value.secret_version)[0]
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${data.google_compute_default_service_account.default.email}"

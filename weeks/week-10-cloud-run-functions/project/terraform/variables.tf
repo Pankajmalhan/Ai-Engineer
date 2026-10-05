@@ -102,3 +102,20 @@ variable "secret_env_vars" {
     { name = "OPENAI_API_KEY", secret = "openai-api-key", version = "latest" },
   ]
 }
+
+variable "enable_langfuse" {
+  description = <<-EOT
+    Send traces from BOTH the function and the service to Langfuse. Adds LANGFUSE_PUBLIC_KEY /
+    LANGFUSE_SECRET_KEY (from Secret Manager secrets `langfuse-public-key` /
+    `langfuse-secret-key`, which must already exist) and LANGFUSE_BASE_URL. Note the cold-start
+    tradeoff in concept.md: the Langfuse SDK is imported on the first traced request.
+  EOT
+  type        = bool
+  default     = false
+}
+
+variable "langfuse_base_url" {
+  description = "Langfuse server URL used when enable_langfuse is true (a Langfuse on your laptop is not reachable from Cloud Run)."
+  type        = string
+  default     = "https://cloud.langfuse.com"
+}

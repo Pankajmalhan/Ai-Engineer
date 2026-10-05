@@ -44,3 +44,63 @@ def test_chat_returns_answer_and_contexts(monkeypatch):
     assert body["answer"].startswith("stub answer for:")
     assert body["retrieved_contexts"]
     assert body["retrieved_doc_ids"]
+
+
+def test_function_traces_and_flushes_when_langfuse_is_configured(monkeypatch):
+    """The deployed entry point itself must go through app/tracing.py: with credentials set,
+    one request yields a request_error=0 score and exactly one flush before the response."""
+    import sys
+    import types
+    from contextlib import contextmanager
+
+    seen = {"scores": [], "flushes": 0, "tags": []}
+
+    class Obs:
+        trace_id = "t"
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def start_as_current_observation(self, **kw):
+            return Obs()
+
+        def update(self, **kw):
+            pass
+
+    class Client:
+        def start_as_current_observation(self, **kw):
+            return Obs()
+
+        def create_score(self, **kw):
+            seen["scores"].append(kw["name"] + "=" + str(kw["value"]))
+
+        def flush(self):
+            seen["flushes"] += 1
+
+    @contextmanager
+    def propagate_attributes(**kw):
+        seen["tags"].append(kw["tags"])
+        yield
+
+    module = types.ModuleType("langfuse")
+    module.get_client = lambda: Client()
+    module.propagate_attributes = propagate_attributes
+    monkeypatch.setitem(sys.modules, "langfuse", module)
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk")
+    monkeypatch.setenv("DEPLOY_TARGET", "cloud-run-function")
+    monkeypatch.setattr(
+        "app.tracing.generate_answer",
+        lambda q, c: GenerationResult(answer="ok", input_tokens=1, output_tokens=1),
+    )
+
+    client = _make_client(monkeypatch)
+    response = client.post("/", json={"question": "What's the refund window for annual plans?"})
+
+    assert response.status_code == 200
+    assert "request_error=0" in seen["scores"]
+    assert seen["flushes"] == 1
+    assert seen["tags"] == [["cloud-run-function"]]

@@ -84,3 +84,21 @@ variable "secret_env_vars" {
   }))
   default = []
 }
+
+variable "enable_langfuse" {
+  description = <<-EOT
+    Send traces from this service to Langfuse. Adds LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY
+    (from Secret Manager secrets `langfuse-public-key` / `langfuse-secret-key`, which must
+    already exist -- see project README) and LANGFUSE_BASE_URL. The deployed container cannot
+    reach a Langfuse running on your laptop (Week 8's docker-compose), so point
+    langfuse_base_url at Langfuse Cloud or a Langfuse you host somewhere Cloud Run can reach.
+  EOT
+  type        = bool
+  default     = false
+}
+
+variable "langfuse_base_url" {
+  description = "Langfuse server URL used when enable_langfuse is true."
+  type        = string
+  default     = "https://cloud.langfuse.com"
+}

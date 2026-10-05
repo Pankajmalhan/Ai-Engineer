@@ -13,6 +13,7 @@ import functions_framework
 from flask import Request, jsonify
 
 from app.pipeline import RAGPipeline
+from app.tracing import traced_answer
 
 from dotenv import load_dotenv
 
@@ -31,7 +32,9 @@ def rag_chat(request: Request):
     if not question:
         return jsonify(error="question is required"), 400
 
-    result = _pipeline.answer(question)
+    # Falls straight through to _pipeline.answer() unless LANGFUSE_* env vars are set; when
+    # they are, flushes before returning (a function's instance is frozen after the response).
+    result = traced_answer(_pipeline, question)
     return jsonify(
         answer=result.answer,
         retrieved_contexts=result.retrieved_contexts,
