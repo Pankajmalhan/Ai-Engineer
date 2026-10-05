@@ -1,6 +1,11 @@
-"""Braintrust eval file -- discovered and run by `npx braintrust eval evals/` locally,
-or by the braintrustdata/eval-action in .github/workflows/week-08-braintrust-eval.yml on
-every PR. Each run logs a new *experiment* under the northwind-rag-week8 project;
+"""Braintrust eval file -- discovered and run by `uv run braintrust eval evals/` locally,
+or by the braintrustdata/eval-action in .github/workflows/week-09-cloud-run-deploy.yml on
+every PR. Named `eval_rag_quality.py`, not `rag_quality.eval.py`: the *Python* braintrust
+CLI's directory scan only matches `eval_*.py` (INCLUDE in its cli/eval.py), unlike the
+Node CLI's `*.eval.ts` convention documented on braintrust.dev -- get this wrong and the
+CLI silently discovers zero files and exits 0, which is exactly what happened here before
+this was renamed (no error, no experiment, PR comment just said "No experiments to report").
+Each run logs a new *experiment* under the northwind-rag-week9 project;
 Braintrust diffs it against the previous experiment from the base branch, and the
 eval-action posts that score delta as a PR comment -- the actual "release gate"
 mechanic is Braintrust's own experiment-diffing, not something this repo scripts by hand.
@@ -48,7 +53,7 @@ def faithfulness(input, output, expected, metadata=None, **kwargs) -> dict:
 
 
 Eval(
-    "northwind-rag-week8",
+    "northwind-rag-week9",
     data=lambda: [
         {
             "input": sample.question,
