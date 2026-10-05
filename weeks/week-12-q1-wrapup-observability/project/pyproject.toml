@@ -1,0 +1,20 @@
+[project]
+name = "q1-wrapup-observability"
+version = "0.1.0"
+description = "Week 12 project: Langfuse observability across every deployment target -- an error-rate alert that emails, a Langfuse-webhook-to-email relay, and a script that proves each deployment's traces actually arrive."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "langfuse>=4.0",
+    "httpx>=0.27",
+    "functions-framework>=3.8",
+    "python-dotenv>=1.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
