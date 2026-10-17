@@ -1,0 +1,31 @@
+[project]
+name = "crewai-vs-langgraph"
+version = "0.1.0"
+description = "Week 16 project: a 3-agent CrewAI crew (Retriever, Relevance Grader, Answer Synthesiser) and the same three roles as a LangGraph graph, compared on 20 complex queries for answer quality and latency, with optional Langfuse tracing of both."
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "crewai>=1.0",
+    "langgraph>=1.0",
+    "langchain-core>=1.0",
+    "langchain-openai>=1.0",
+    "pydantic>=2.7",
+    "rank-bm25>=0.2",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+tracing = [
+    "langfuse>=4.0",
+    "openinference-instrumentation-crewai>=0.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# CrewAI emits its own internal DeprecationWarnings on every Agent/Crew build; keep real warnings visible
+filterwarnings = ["ignore::DeprecationWarning:crewai"]
