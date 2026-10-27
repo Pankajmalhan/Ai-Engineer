@@ -1,0 +1,24 @@
+[project]
+name = "deep-agents-harness"
+version = "0.1.0"
+description = "Week 16b project: a Deep Agent (planning, sub-agents, virtual filesystem) vs the Week 14 supervisor pattern, run on the same multi-step codebase-audit task and compared on steps, tokens and failure modes."
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "deepagents>=0.7",
+    "langgraph>=1.0",
+    "langchain>=1.0",
+    "langchain-core>=1.0",
+    "langchain-openai>=1.0",
+    "langsmith>=0.4",
+    "pydantic>=2.7",
+    "python-dotenv>=1.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,25 @@
+[project]
+name = "agent-evaluation"
+version = "0.1.0"
+description = "Week 16c project: trajectory-level evaluation of multi-agent systems -- RAGAS + DeepEval agent metrics, handoff accuracy for the Week 14 supervisor, a supervisor-vs-Deep-Agent step-efficiency comparison, and tau-bench-style end-state tasks with pass^k."
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "ragas>=0.3",
+    "deepeval>=3.6",
+    "langfuse>=3",
+    "langchain-core>=1.0",
+    "pydantic>=2.7",
+    "python-dotenv>=1.0",
+    # ragas==0.4.3 imports langchain_community.chat_models.vertexai at load time; that submodule
+    # was removed in langchain-community 0.4 (same pin and reason as Week 5).
+    "langchain-community<0.4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
