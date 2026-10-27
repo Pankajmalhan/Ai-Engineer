@@ -2,18 +2,14 @@ name: Week 6 - DeepEval CI Eval Gates
 
 # Runs on every push to any branch (so "push a deliberately bad change" fails right on
 # that branch, per this week's task) and on PRs into main (so it can be wired up as a
-# required status check that blocks merge). Path-filtered so unrelated pushes elsewhere
-# in this multi-week roadmap repo don't trigger it.
+# required status check that blocks merge). Deliberately NOT path-filtered: it runs on
+# every change in the repo, and also on demand via workflow_dispatch. A side benefit is
+# that a required `eval-gate` check can never get stuck waiting on a skipped workflow.
 on:
   push:
-    paths:
-      - "weeks/week-06-deepeval-ci-eval-gates/project/**"
-      - ".github/workflows/week-06-deepeval-eval-gates.yml"
   pull_request:
     branches: [main]
-    paths:
-      - "weeks/week-06-deepeval-ci-eval-gates/project/**"
-      - ".github/workflows/week-06-deepeval-eval-gates.yml"
+  workflow_dispatch:
 
 jobs:
   eval-gate:

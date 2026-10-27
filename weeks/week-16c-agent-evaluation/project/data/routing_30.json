@@ -1,0 +1,484 @@
+[
+  {
+    "id": "route-01",
+    "query": "Where is the refresh_session function implemented?",
+    "expected": "code",
+    "subset": "w14",
+    "ambiguous": false,
+    "reference": "The question is answered by the code specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_code",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-02",
+    "query": "Show me the stack trace handling in the payments module",
+    "expected": "code",
+    "subset": "w14",
+    "ambiguous": false,
+    "reference": "The question is answered by the code specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_code",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-03",
+    "query": "Which files import the auth client class?",
+    "expected": "code",
+    "subset": "w14",
+    "ambiguous": false,
+    "reference": "The question is answered by the code specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_code",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-04",
+    "query": "Are we allowed to commit API keys?",
+    "expected": "rules",
+    "subset": "w14",
+    "ambiguous": false,
+    "reference": "The question is answered by the rules specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "lookup_rules",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-05",
+    "query": "Does the lint standard require type hints?",
+    "expected": "rules",
+    "subset": "w14",
+    "ambiguous": false,
+    "reference": "The question is answered by the rules specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "lookup_rules",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-06",
+    "query": "Must every pull request get an approval before merge?",
+    "expected": "rules",
+    "subset": "w14",
+    "ambiguous": false,
+    "reference": "The question is answered by the rules specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "lookup_rules",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-07",
+    "query": "What is a subscription in our billing system?",
+    "expected": "domain",
+    "subset": "w14",
+    "ambiguous": false,
+    "reference": "The question is answered by the domain specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_domain_docs",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-08",
+    "query": "How long does a new customer stay on the free tier during onboarding?",
+    "expected": "domain",
+    "subset": "w14",
+    "ambiguous": false,
+    "reference": "The question is answered by the domain specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_domain_docs",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-09",
+    "query": "Tell me about session refresh",
+    "expected": "code",
+    "subset": "w14",
+    "ambiguous": true,
+    "reference": "The question is answered by the code specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_code",
+        "args": {
+          "k": 3
+        }
+      }
+    ],
+    "clarification": "I mean the implementation"
+  },
+  {
+    "id": "route-10",
+    "query": "Can we merge the function that calls the billing API?",
+    "expected": "rules",
+    "subset": "w14",
+    "ambiguous": true,
+    "reference": "The question is answered by the rules specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "lookup_rules",
+        "args": {
+          "k": 3
+        }
+      }
+    ],
+    "clarification": "rules"
+  },
+  {
+    "id": "route-11",
+    "query": "Which module defines the retry logic for outbound webhooks?",
+    "expected": "code",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the code specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_code",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-12",
+    "query": "Why does the checkout handler throw a NullPointerException when the cart is empty?",
+    "expected": "code",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the code specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_code",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-13",
+    "query": "Can you point me to where the JWT is decoded?",
+    "expected": "code",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the code specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_code",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-14",
+    "query": "What does the parse_config function return when the file is missing?",
+    "expected": "code",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the code specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_code",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-15",
+    "query": "List the callers of send_invoice_email.",
+    "expected": "code",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the code specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_code",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-16",
+    "query": "Is there a helper that converts UTC timestamps to the user's timezone?",
+    "expected": "code",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the code specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_code",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-17",
+    "query": "What is our policy on force-pushing to main?",
+    "expected": "rules",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the rules specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "lookup_rules",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-18",
+    "query": "How many approvals does a hotfix need before it can ship?",
+    "expected": "rules",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the rules specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "lookup_rules",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-19",
+    "query": "Are we permitted to use GPL-licensed dependencies?",
+    "expected": "rules",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the rules specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "lookup_rules",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-20",
+    "query": "What naming convention do we use for database migrations?",
+    "expected": "rules",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the rules specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "lookup_rules",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-21",
+    "query": "Should error messages ever include user email addresses?",
+    "expected": "rules",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the rules specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "lookup_rules",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-22",
+    "query": "Do we have to write tests for every new endpoint?",
+    "expected": "rules",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the rules specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "lookup_rules",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-23",
+    "query": "What happens to a customer's data when they cancel their subscription?",
+    "expected": "domain",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the domain specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_domain_docs",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-24",
+    "query": "How is a prorated refund calculated for annual plans?",
+    "expected": "domain",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the domain specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_domain_docs",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-25",
+    "query": "What does the 'workspace owner' role mean?",
+    "expected": "domain",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the domain specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_domain_docs",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-26",
+    "query": "When does a free trial convert into a paid plan?",
+    "expected": "domain",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the domain specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_domain_docs",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-27",
+    "query": "Explain the difference between a seat and a member.",
+    "expected": "domain",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the domain specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_domain_docs",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-28",
+    "query": "How do invoices work for customers on the enterprise plan?",
+    "expected": "domain",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the domain specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_domain_docs",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-29",
+    "query": "What counts as an active user for billing purposes?",
+    "expected": "domain",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the domain specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_domain_docs",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "route-30",
+    "query": "Who can see the audit log in the admin console?",
+    "expected": "domain",
+    "subset": "new",
+    "ambiguous": false,
+    "reference": "The question is answered by the domain specialist.",
+    "reference_tool_calls": [
+      {
+        "name": "search_domain_docs",
+        "args": {
+          "k": 3
+        }
+      }
+    ]
+  }
+]

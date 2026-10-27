@@ -3,7 +3,7 @@
 The Northwind API RAG service (same fixture corpus as Weeks 5-7), with two eval/observability
 layers added on top:
 
-- **Braintrust** -- an eval-as-CI release gate. `evals/rag_quality.eval.py` scores every PR's
+- **Braintrust** -- an eval-as-CI release gate. `evals/eval_rag_quality.py` scores every PR's
   pipeline against a fixed golden set with a deterministic `retrieval_hit` score and RAGAS's
   LLM-judged `faithfulness` score, logging a new Braintrust *experiment* each run. Braintrust
   diffs that experiment against the base branch's and the `braintrustdata/eval-action` posts

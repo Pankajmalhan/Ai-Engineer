@@ -7,7 +7,7 @@ labeled "correct" document to check retrieval against, so a request counts as a 
 when BM25's top score clears MIN_RELEVANCE_SCORE (i.e. retrieval found something it's
 confident about), not when the *right* document was retrieved -- that stronger,
 ground-truth version of hit rate is only computable offline against a labeled set
-(see evals/rag_quality.eval.py), not on live traffic.
+(see evals/eval_rag_quality.py), not on live traffic.
 
 Import-safe and network-safe without Langfuse credentials: langfuse_enabled() gates
 every call site, mirroring app.llm.openai_available()'s pattern elsewhere in this
@@ -67,13 +67,7 @@ def traced_answer(pipeline: RAGPipeline, question: str) -> PipelineResult:
             input={"question": question, "contexts": contexts},
         ) as generation:
             result = generate_answer(question, contexts)
-            print(f"result: {result}")
-            print(f"result.answer: {result.answer}")
-            print(f"result.input_tokens: {result.input_tokens}")
-            print(f"result.output_tokens: {result.output_tokens}")
-            print(f"result.input_tokens * _INPUT_COST_PER_TOKEN: {result.input_tokens * _INPUT_COST_PER_TOKEN}")
-            print(f"result.output_tokens * _OUTPUT_COST_PER_TOKEN: {result.output_tokens * _OUTPUT_COST_PER_TOKEN}")
-            print(f"trace.trace_id: {trace.trace_id}")
+          
             generation.update(
                 output=result.answer,
                 usage_details={"input": result.input_tokens, "output": result.output_tokens},

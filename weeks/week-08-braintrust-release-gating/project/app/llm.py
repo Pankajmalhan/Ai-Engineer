@@ -43,7 +43,9 @@ def openai_available() -> bool:
 def _client():
     from openai import OpenAI
 
-    return OpenAI(api_key=OPENAI_API_KEY)
+    from braintrust import wrap_openai
+
+    return wrap_openai(OpenAI(api_key=OPENAI_API_KEY))
 
 
 def generate_answer(question: str, contexts: list[str]) -> GenerationResult:

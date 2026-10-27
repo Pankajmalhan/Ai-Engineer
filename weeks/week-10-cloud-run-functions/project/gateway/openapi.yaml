@@ -1,0 +1,44 @@
+# API Gateway config for the northwind-rag-fn Cloud Run function. `address` is
+# rendered from the live function URL by scripts/deploy_gateway.sh (via envsubst) --
+# it can't be known ahead of the function's own deploy, so this file is a template,
+# not the literal spec `gcloud api-gateway api-configs create` gets handed.
+swagger: '2.0'
+info:
+  title: northwind-rag-gateway
+  description: API Gateway in front of the northwind-rag-fn Cloud Run function.
+  version: 1.0.0
+schemes:
+  - https
+produces:
+  - application/json
+x-google-backend:
+  address: ${FUNCTION_URL}
+  # API Gateway's own deadline default (15s) is shorter than a cold RAG request can
+  # take (buildpacks image cold start + BM25 import + one OpenAI call) -- see
+  # concept.md's benchmark numbers for why this is set well above the observed p99.
+  deadline: 30.0
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: health
+      responses:
+        '200':
+          description: OK
+  /chat:
+    post:
+      summary: RAG chat over the Northwind API docs corpus
+      operationId: chat
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            required: [question]
+            properties:
+              question:
+                type: string
+      responses:
+        '200':
+          description: OK
