@@ -1,37 +1,61 @@
 ---
 name: week-plan
-description: Scaffold or update a week in the AI-engineer learning roadmap from a pasted goal/task/resources block — writes a concept.md theory explainer, captures resources.md, sets up notes.md, and builds a tested project/ when the goal calls for implementation. Trigger on "/week-plan", "let's start week N", "here's this week's goal", or any pasted roadmap block naming a weekly goal, task, and resources.
+description: Scaffold or update a week in the AI-engineer learning roadmap from just a week number — fetches the latest published "AI Engineer Roadmap" artifact, pulls that week's goals/tasks/resources, then writes a concept.md theory explainer, resources.md, notes.md, and a tested project/ when the goal calls for implementation. Trigger on "/week-plan 17", "let's start week N", "plan week 16b", or a pasted roadmap block (fallback).
+argument-hint: <week number, e.g. 17 or 16b>
 ---
 
 # Week Plan
 
-Turns a raw pasted roadmap block (goal + weekly task + learning resources, in whatever
-shape the user pastes it — this is often rough voice-to-text style prose, not a form)
-into a scaffolded folder under `weeks/`, so the user can learn the concept and, when
-relevant, build and run real code for it.
+Takes a week number (e.g. `17`, `16b`, `6b.1`), reads that week's goals / tasks /
+resources from the published roadmap artifact, and scaffolds a folder under `weeks/` so
+the user can learn the concept and, when relevant, build and run real code for it.
 
-## 1. Figure out which week this is
+The user will normally give **only the week number**. Do not ask them to paste the
+description — the artifact is the source of truth. A pasted block is still accepted as a
+fallback (see step 2).
 
-- List existing `weeks/week-NN-*` directories. If the user's paste names a week number
-  explicitly (e.g. "Week 3", "week3"), use that. Otherwise use `max existing + 1`
-  (or `01` if `weeks/` doesn't exist yet).
-- Derive a short kebab-case topic slug from the goal (e.g. "single-vector retrieval
-  limitations in production, implement BM25 sparse retrieval" → `sparse-retrieval-bm25`).
-  Keep it to 2-4 words.
-- Target directory: `weeks/week-NN-topic-slug/`. If a directory for this week number
-  already exists, this is an UPDATE, not a fresh scaffold — see step 7.
+## 1. Fetch the latest roadmap (every time)
 
-## 2. Parse the pasted block
+The roadmap is edited over time (links get updated, weeks get added), so always fetch
+it fresh — never reuse a saved copy from an earlier session.
 
-Read it loosely and pull out:
-- **Goal(s)** — what the user should understand or be able to do by the end of the week
-- **Task(s)** — the concrete thing(s) to implement/do
-- **Resources** — any links, papers, docs, videos listed
+1. Call the Artifact tool: `action: "read"`, `url: https://claude.ai/artifact/37FwVAbsCcqyYGkNCvvyzi`.
+   The result header names the saved HTML file path
+   (`.../tool-results/artifact-....html`). The inline preview is truncated; use the file.
+2. Extract the week:
+   `python3 -I .claude/skills/week-plan/scripts/extract_week.py <saved-html-path> <week>`
+   Prints JSON: `quarter`, `month` (theme + blurb), and `week` with `title`, `goals`,
+   `tasks`, `tools`, `primary`, `secondary`, `status` (`current` | `update` | `fix`),
+   `note`, `alts` (`[title, url]` pairs).
+   `--list` instead of a week shows every week id and title.
+3. If the week isn't found, the script lists the valid ids — show them and ask which one.
+   If the Artifact read fails (not signed in, URL gone), say so plainly and fall back to
+   a pasted block rather than guessing the week's content.
 
-If a section is genuinely missing (e.g. no resources given), don't invent one — leave
-a placeholder in `resources.md` rather than fabricating links. Ask the user a
-clarifying question only if the goal is too vague to act on at all; otherwise use
-reasonable judgment and proceed.
+## 2. Figure out the target directory
+
+- Week id → directory number: `17` → `week-17-…`, `16b` → `week-16b-…`, `6b.1` → `week-6b1-…`.
+- Derive a 2-4 word kebab-case topic slug from the week `title`
+  (e.g. "Tree-sitter AST parsing for the code index" → `tree-sitter-ast-parsing`).
+- Target: `weeks/week-<id>-<slug>/`. If a directory for that id already exists (match on
+  the `week-<id>-` prefix), this is an UPDATE — see step 7.
+- If no week number was given and the user pasted a block instead: use an explicit week
+  number from the paste, else `max existing + 1`, and parse goal/task/resources loosely
+  from the prose. Don't invent missing sections; leave placeholders.
+
+## 2b. Use what the artifact gives you
+
+- `goals` and `tasks` are the spec. Build to them, don't reinterpret them.
+- `note` / `status`: when `status` is `update` or `fix`, the note says the original
+  tool/link is outdated or renamed. Follow the note (e.g. use the successor library,
+  the renamed product) and call it out in `concept.md` so the user knows why the plan
+  text and the project differ. Use `context7` for current library docs when the week
+  names a library/SDK, since these tools change fast.
+- `primary`, `secondary`, and `alts` go into `resources.md` (alts are the refreshed
+  links — mark them as such). `primary`/`secondary` are titles without URLs; don't
+  fabricate URLs for them.
+- `month.theme`/`blurb` give the surrounding context; use it so the week's concept
+  connects to what the quarter is building toward.
 
 ## 3. Decide: theory only, hands-on, or both
 
