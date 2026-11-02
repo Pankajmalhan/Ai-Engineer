@@ -62,8 +62,11 @@ def main() -> None:
             "handoffs": [turn.agent] if turn.agent else [],
             "final_output": turn.answer or "",
             "meta": {
-                "expected": item["expected"], "routed_to": category, "subset": item["subset"],
-                "ambiguous": item["ambiguous"], "asked": asked,
+                "expected": item["expected"], 
+                "routed_to": category, 
+                "subset": item["subset"],
+                "ambiguous": item["ambiguous"], 
+                "asked": asked,
                 "first_pass": first.get("category"), "first_confidence": first.get("confidence"),
                 "classifier": args.classifier, "system": "week-14-supervisor",
             },

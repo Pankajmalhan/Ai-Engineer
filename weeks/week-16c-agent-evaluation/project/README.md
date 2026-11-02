@@ -20,6 +20,31 @@ scripts/record.py              re-record trajectories via the bridges
 scripts/evaluate.py            score recordings (routing report, tool-call metrics, comparison table)
 ```
 
+## Which function scores what
+
+| What it examines | Functions | LLM? |
+|---|---|---|
+| **Tool calls** (right tools?) | `score_tool_calls` (RAGAS `ToolCallAccuracy` / `ToolCallF1`), `tool_correctness` (DeepEval `ToolCorrectnessMetric`) | no |
+| **Tool arguments** (sensible values?) | DeepEval `ArgumentCorrectnessMetric`, built by `build_component_metrics` | yes |
+| **Outcome / final output** | `score_goal_accuracy` (RAGAS `AgentGoalAccuracyWithReference`); DeepEval `TaskCompletion`, built by `build_trajectory_metrics` | yes |
+| **The path** (plan and efficiency) | DeepEval `PlanQuality`, `PlanAdherence`, `StepEfficiency`, built by `build_trajectory_metrics` | yes |
+| **Routing and efficiency** | `metrics.py`: handoff accuracy, delegation efficiency, pass^k | no |
+| **Exact end state** | `end_state.py`: regex checks on the report and files | no |
+
+The deterministic rows run in CI for free; the LLM-judged rows need `OPENAI_API_KEY`.
+
+* `score_tool_calls` and `tool_correctness` work on any ordered list of calls, nested sub-agent calls included. On
+  Week 14 each run is one hop, which is why they equal handoff accuracy there.
+* `reference_tool_calls` (in `data/routing_30.json`) is the answer key for those two; `reference` (a sentence) is the
+  answer key for `score_goal_accuracy`. `expected` is the correct specialist, used for handoff accuracy.
+* `score_goal_accuracy` infers the run's end state with an LLM and compares it to the `reference` sentence (binary
+  0/1). It sees the user input, tool names, structured arguments and `final_output`, not tool results. It is not a
+  strict tool check -- keep the tool-call metrics beside it.
+* `tool_correctness` compares tool names only, and an extra call still scores 1.0; RAGAS `ToolCallAccuracy` scores
+  an extra call 0.0. `NoJudge` is a stand-in model that raises if called, proving the score used no LLM.
+* `final_output` is stored on every trajectory but no Week 14 routing score reads it; it matters for the judged
+  metrics and for Week 16b.
+
 ## Install, test, run
 
 ```bash

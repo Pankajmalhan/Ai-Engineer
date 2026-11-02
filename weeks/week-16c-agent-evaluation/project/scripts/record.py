@@ -23,6 +23,8 @@ from agent_eval.trajectory import write_jsonl  # noqa: E402
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="system", required=True)
+    # print(sub)
+    
     w14 = sub.add_parser("w14")
     w14.add_argument("--classifier", choices=["heuristic", "llm"], default="heuristic")
     w16b = sub.add_parser("w16b")
@@ -31,6 +33,7 @@ def main() -> None:
     w16b.add_argument("--trials", type=int, default=1)
     w16b.add_argument("--offline", action="store_true")
     args = parser.parse_args()
+    print(args)
     RUNS.mkdir(exist_ok=True)
 
     if args.system == "w14":
