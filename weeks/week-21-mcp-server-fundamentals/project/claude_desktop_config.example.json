@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "codebase-assistant": {
+      "command": "/ABSOLUTE/PATH/TO/week-21-mcp-server-fundamentals/project/node_modules/.bin/tsx",
+      "args": ["/ABSOLUTE/PATH/TO/week-21-mcp-server-fundamentals/project/src/index.ts"],
+      "env": {
+        "ASSISTANT_URL": "http://localhost:8000"
+      }
+    }
+  }
+}
