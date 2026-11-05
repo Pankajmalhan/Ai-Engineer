@@ -1,0 +1,41 @@
+name: Week 16c - Agent Eval Gates
+
+# Same gate-on-regression pattern as Week 6, now for agent trajectories. The deterministic gates (handoff
+# accuracy, RAGAS ToolCallF1, end-state checks) replay the committed recordings in data/runs/ and need no key.
+# The LLM-judged gates (DeepEval trajectory metrics, RAGAS AgentGoalAccuracy) run only when OPENAI_API_KEY is
+# set AND real-model recordings exist; otherwise they skip with an explicit reason.
+on:
+  push:
+    paths:
+      - "weeks/week-16c-agent-evaluation/project/**"
+      - ".github/workflows/week-16c-agent-eval-gates.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "weeks/week-16c-agent-evaluation/project/**"
+      - ".github/workflows/week-16c-agent-eval-gates.yml"
+
+jobs:
+  agent-eval-gate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: weeks/week-16c-agent-evaluation/project
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          working-directory: weeks/week-16c-agent-evaluation/project
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run agent eval gates
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          DEEPEVAL_TELEMETRY_OPT_OUT: "1"
+        run: uv run pytest tests/ -v

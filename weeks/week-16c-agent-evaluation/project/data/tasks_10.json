@@ -1,0 +1,230 @@
+[
+  {
+    "id": "t01",
+    "sources_needed": 1,
+    "tags": [
+      "code"
+    ],
+    "user_goal": "Where is refresh_session defined, and what does it do when the session has already expired?",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "names the file",
+        "pattern": "src/auth/session\\.py"
+      },
+      {
+        "kind": "report_matches",
+        "description": "says it raises SessionExpired",
+        "pattern": "SessionExpired"
+      }
+    ]
+  },
+  {
+    "id": "t02",
+    "sources_needed": 1,
+    "tags": [
+      "rules"
+    ],
+    "user_goal": "Which team rule says secrets must never be committed to source? Give its id.",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "gives SEC-03",
+        "pattern": "SEC-03"
+      }
+    ]
+  },
+  {
+    "id": "t03",
+    "sources_needed": 1,
+    "tags": [
+      "domain"
+    ],
+    "user_goal": "What is the maximum session lifetime according to the written session policy?",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "states 12 hours / 43200 s",
+        "pattern": "12[- ]?hours?|12h|43200"
+      }
+    ]
+  },
+  {
+    "id": "t04",
+    "sources_needed": 1,
+    "tags": [
+      "domain"
+    ],
+    "user_goal": "When are invoices generated, and for which accounts?",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "first day of the month",
+        "pattern": "first day|1st|first of"
+      },
+      {
+        "kind": "report_matches",
+        "description": "active accounts",
+        "pattern": "active"
+      }
+    ]
+  },
+  {
+    "id": "t05",
+    "sources_needed": 2,
+    "tags": [
+      "code",
+      "domain"
+    ],
+    "user_goal": "Does the code's session timeout match the documented idle timeout? State both values.",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "code value 3600 / 60 min",
+        "pattern": "3600|60[- ]?min(ute)?s?|(1|one)[- ]hours?"
+      },
+      {
+        "kind": "report_matches",
+        "description": "policy value 30 min / 1800",
+        "pattern": "30[- ]?min(ute)?s?|1800"
+      },
+      {
+        "kind": "report_matches",
+        "description": "says they differ",
+        "pattern": "mismatch|differ|does not match|doesn't match|not match|longer|twice|double"
+      }
+    ]
+  },
+  {
+    "id": "t06",
+    "sources_needed": 2,
+    "tags": [
+      "code",
+      "rules"
+    ],
+    "user_goal": "Does the session module break any team rule about secrets or type hints? List rule ids.",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "SEC-03",
+        "pattern": "SEC-03"
+      },
+      {
+        "kind": "report_matches",
+        "description": "STYLE-12",
+        "pattern": "STYLE-12"
+      }
+    ]
+  },
+  {
+    "id": "t07",
+    "sources_needed": 2,
+    "tags": [
+      "code",
+      "domain"
+    ],
+    "user_goal": "The onboarding code starts accounts on a free trial. Is the trial length consistent with the onboarding documentation?",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "14 days",
+        "pattern": "14"
+      },
+      {
+        "kind": "report_matches",
+        "description": "says consistent",
+        "pattern": "consistent|match|same|agree|aligned"
+      }
+    ]
+  },
+  {
+    "id": "t08",
+    "sources_needed": 3,
+    "tags": [
+      "audit"
+    ],
+    "user_goal": "Audit the session-refresh feature: locate its implementation and tests, list every violated team rule by id, and flag every mismatch with the documented session policy.",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "location",
+        "pattern": "src/auth/session\\.py"
+      },
+      {
+        "kind": "report_matches",
+        "description": "SEC-03",
+        "pattern": "SEC-03"
+      },
+      {
+        "kind": "report_matches",
+        "description": "STYLE-12",
+        "pattern": "STYLE-12"
+      },
+      {
+        "kind": "report_matches",
+        "description": "TEST-05",
+        "pattern": "TEST-05"
+      },
+      {
+        "kind": "report_matches",
+        "description": "TTL mismatch",
+        "pattern": "(?s)(?=.*(30[- ]?min(ute)?s?|1800))(?=.*(3600|60[- ]?min(ute)?s?|(1|one)[- ]hours?))"
+      },
+      {
+        "kind": "report_matches",
+        "description": "max lifetime",
+        "pattern": "12[- ]?hours?|12h|43200"
+      }
+    ]
+  },
+  {
+    "id": "t09",
+    "sources_needed": 3,
+    "tags": [
+      "audit"
+    ],
+    "user_goal": "Is session refresh compliant with the policy and the team conventions? Is a maximum session lifetime enforced anywhere in the code?",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "policy cap stated",
+        "pattern": "12[- ]?hours?|12h|43200"
+      },
+      {
+        "kind": "report_matches",
+        "description": "says the cap is not enforced",
+        "pattern": "(?i)(no|not|missing|lacks?|without)[^.\\n]{0,60}(maximum|max|cap|12[- ]?hours?|43200)"
+      },
+      {
+        "kind": "report_matches",
+        "description": "cites a violated rule id",
+        "pattern": "SEC-03|STYLE-12|TEST-05"
+      }
+    ]
+  },
+  {
+    "id": "t10",
+    "sources_needed": 3,
+    "tags": [
+      "audit"
+    ],
+    "user_goal": "Which tests cover session refresh, which team rule says they are insufficient, and what failure behaviour does the code have that should be tested?",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "names the existing test",
+        "pattern": "test_refresh_extends_expiry"
+      },
+      {
+        "kind": "report_matches",
+        "description": "TEST-05",
+        "pattern": "TEST-05"
+      },
+      {
+        "kind": "report_matches",
+        "description": "failure path = SessionExpired",
+        "pattern": "SessionExpired|expired"
+      }
+    ]
+  }
+]

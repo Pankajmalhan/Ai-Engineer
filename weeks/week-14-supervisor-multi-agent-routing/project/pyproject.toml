@@ -1,0 +1,22 @@
+[project]
+name = "supervisor-multi-agent-routing"
+version = "0.1.0"
+description = "Week 14 project: a LangGraph supervisor that classifies queries into code / rules / domain, routes to three stub-backed sub-agents, and pauses for human clarification (interrupt) when confidence < 0.6."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "langgraph>=1.0",
+    "langchain-core>=1.0",
+    "langchain-openai>=1.0",
+    "langsmith>=0.4",
+    "pydantic>=2.7",
+    "python-dotenv>=1.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

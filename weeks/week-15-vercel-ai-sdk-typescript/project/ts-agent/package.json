@@ -1,0 +1,31 @@
+{
+  "name": "ts-agent-layer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Week 15: TypeScript agent layer (Vercel AI SDK) in front of a Python LangGraph service",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "client": "tsx src/client.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=20.12"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^4.0.94",
+    "@ai-sdk/openai-compatible": "^3.0.67",
+    "@ai-sdk/provider": "^4.0.26",
+    "@hono/node-server": "^2.1.4",
+    "ai": "^7.0.137",
+    "hono": "^4.13.13",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  }
+}

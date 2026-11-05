@@ -1,0 +1,38 @@
+docker build -t week09-rag:local .
+
+uv sync
+export OPENAI_API_KEY=sk-proj-EjsPKMOJF4nC
+uv run uvicorn app.main:app --port 8000
+
+
+curl -s -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is the API rate limit on the Pro tier?"}'
+
+
+docker run -d --name week09-demo -p 8080:8080 -e OPENAI_API_KEY=sk-... week09-rag:local
+curl -s -X POST http://localhost:8080/chat \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is the API rate limit on the Pro tier?"}'
+
+
+docker run -d --name week09-demo -p 8080:8080 -e OPENAI_API_KEY=sk-proj
+curl -s -X POST http://localhost:8080/chat \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is the API rate limit on the Pro tier?"}'
+
+
+
+
+terraform init     → downloads the google/google-beta provider plugins,
+                         sets up local state tracking (terraform.tfstate)
+
+2. terraform plan     → walks the graph above, compares it against
+   (or apply -auto-     current real GCP state (via state file), and
+    approve, which       computes: "create these 10 resources in this order"
+    skips the pause)
+
+3. terraform apply    → actually calls the GCP API, resource by resource,
+                         following the graph — independent branches
+                         (like Artifact Registry + Cloud Armor) execute
+                         in parallel, dependent ones wait their turn

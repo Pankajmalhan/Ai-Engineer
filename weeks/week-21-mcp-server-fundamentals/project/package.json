@@ -1,0 +1,31 @@
+{
+  "name": "week-21-mcp-codebase-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Week 21: minimal TypeScript MCP server exposing ask_codebase over stdio",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "fake-assistant": "tsx src/fakeAssistant.ts",
+    "inspect": "npx @modelcontextprotocol/inspector npx tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.6",
+    "@modelcontextprotocol/hono": "^2.0.2",
+    "@modelcontextprotocol/server": "^2.4.0",
+    "hono": "^4.13.16",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.4.0",
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

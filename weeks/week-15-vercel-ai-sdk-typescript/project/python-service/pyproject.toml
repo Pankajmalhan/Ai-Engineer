@@ -1,0 +1,23 @@
+[project]
+name = "langgraph-stream-service"
+version = "0.1.0"
+description = "Week 15: a small Python LangGraph service (retrieve -> generate) that streams tokens over Server-Sent Events, called by the TypeScript agent layer."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "langgraph>=1.0",
+    "langchain-core>=1.0",
+    "langchain-openai>=1.0",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "python-dotenv>=1.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "httpx>=0.27",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -17,17 +17,19 @@ weeks/
 
 ## How to add a week
 
-Paste your goal / weekly task / learning resources for the week — in whatever shape
-your plan has them — and run the `week-plan` skill (`/week-plan`). It will:
+Run the `week-plan` skill with just the week number: `/week-plan 17` (or `16b`, `6b.1`).
+It reads the latest published
+[AI Engineer Roadmap artifact](https://claude.ai/artifact/37FwVAbsCcqyYGkNCvvyzi) each
+time, so edits to the roadmap are always picked up, then:
 
-1. Figure out the week number and a topic slug
-2. Write `concept.md` explaining the concept(s), tailored to your specific goal
-3. Capture your resources in `resources.md` and set up a blank `notes.md`
-4. If the task calls for implementation, scaffold a Python project under `project/`,
-   implement it, and run the tests before calling it done
+1. Pulls that week's goals, tasks, tools and resources (including refreshed links)
+2. Writes `concept.md` explaining the concept(s), tailored to the week's goal
+3. Captures resources in `resources.md` and sets up a blank `notes.md`
+4. If the task calls for implementation, scaffolds a Python project under `project/`,
+   implements it, and runs the tests before calling it done
 
-Come back to a week any time — pasting more for a week that already exists updates it
-in place instead of starting over.
+Re-running a week that already exists updates it in place instead of starting over.
+Pasting a roadmap block still works as a fallback.
 
 ## Defaults
 

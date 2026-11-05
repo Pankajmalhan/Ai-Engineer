@@ -1,0 +1,2 @@
+functions-framework>=3.8
+langfuse>=4.0

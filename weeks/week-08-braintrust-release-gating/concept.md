@@ -28,7 +28,7 @@ Braintrust's object model, mapped onto this week's actual files:
   `init_dataset(...).insert(...)`) -- a versioned, reusable set of `{input, expected,
   metadata}` cases. This is *data*, not a result. Pushing it is a one-time/occasional
   action, not something that runs on every PR.
-- **An Eval()** (`evals/rag_quality.eval.py`) -- a *task* (the function under test --
+- **An Eval()** (`evals/eval_rag_quality.py`) -- a *task* (the function under test --
   here, `RAGPipeline.answer()` wrapped as `answer_question`) run over that dataset,
   scored by one or more *scorers* (`retrieval_hit`, `faithfulness`). Running `Eval()`
   produces an **experiment** -- one concrete, timestamped, scored run.
@@ -70,7 +70,7 @@ Langfuse's object model, mapped onto `app/tracing.py`:
   `retrieval_hit_rate` is logged here as `1` if BM25's top score clears
   `MIN_RELEVANCE_SCORE`, else `0`.
 
-**The crucial asymmetry vs. the eval side:** in `evals/rag_quality.eval.py`,
+**The crucial asymmetry vs. the eval side:** in `evals/eval_rag_quality.py`,
 `retrieval_hit` is computed against real ground truth (`metadata["source_doc_id"]`,
 known because the golden set is hand-labeled). In `app/tracing.py`, production traffic
 has no such label -- nobody tags a live customer's question with "the correct document
@@ -141,6 +141,22 @@ self-hosted production-scale observability -- which is why this week's task does
 ask you to wire it in for anything, only to understand where it would fit if you were
 already deep in LangChain/LangGraph.
 
+**Two more tools worth knowing about, not used this week (research only, nothing
+implemented):**
+
+- **Pydantic Logfire** -- a full-stack, OTel-native observability platform (built by the
+  Pydantic team), not LLM-specific like Langfuse. It traces the whole app (FastAPI, DB
+  queries, HTTP clients) with the LLM call as one span among many, and lets you query
+  trace data with plain SQL. The SDK is open source (MIT), but unlike Langfuse, the
+  platform itself has **no free self-hosted tier** -- only a free *cloud* (SaaS) tier, or
+  a paid Enterprise tier for self-hosting. That's the practical reason it doesn't
+  replace Langfuse here: this project's self-hosting requirement (see above) is free
+  with Langfuse and isn't with Logfire.
+- **Arize Phoenix** -- open source and free to self-host, like Langfuse, but also
+  OTel-native like Logfire, and bundles both production tracing *and* evals (datasets +
+  experiments) in one tool -- closer to a free, self-hostable blend of what Langfuse and
+  Braintrust do separately in this week's setup.
+
 ## Common pitfalls
 
 - **Treating `retrieval_hit_rate` the same in both places.** The eval-side
@@ -158,7 +174,7 @@ already deep in LangChain/LangGraph.
   after upgrade), which is why the task flagged pointing at the v3->v4 migration guide
   specifically, not a general infra how-to.
 - **Confusing a Dataset with an experiment.** `app/braintrust_push.py` pushes a
-  *Dataset* (reusable input data, versioned, no scores). `evals/rag_quality.eval.py`
+  *Dataset* (reusable input data, versioned, no scores). `evals/eval_rag_quality.py`
   running `Eval()` produces an *experiment* (one scored run over that data). Re-running
   `braintrust_push.py` should upsert the same rows, not create new datasets; re-running
   the eval file always creates a new experiment, by design, since each PR needs its
@@ -172,7 +188,7 @@ already deep in LangChain/LangGraph.
 
 ## Check yourself
 
-1. Why does `evals/rag_quality.eval.py`'s `retrieval_hit` scorer have access to ground
+1. Why does `evals/eval_rag_quality.py`'s `retrieval_hit` scorer have access to ground
    truth (`source_doc_id`) that `app/tracing.py`'s `retrieval_hit_rate` score doesn't?
    What would it take to compute a true, ground-truth-based hit rate on live traffic?
 2. If Braintrust's `eval-action` only diffs against "the base branch's most recent

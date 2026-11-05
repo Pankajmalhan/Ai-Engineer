@@ -1,0 +1,22 @@
+[project]
+name = "langgraph-fundamentals"
+version = "0.1.0"
+description = "Week 13 project: a minimal stateful LangGraph agent (receive query -> retrieve context -> generate answer) over the Northwind API corpus, with a MemorySaver checkpointer for multi-turn memory and LangSmith tracing."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "langgraph>=1.0",
+    "langchain-core>=1.0",
+    "langchain-openai>=1.0",
+    "langsmith>=0.4",
+    "rank-bm25>=0.2",
+    "python-dotenv>=1.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

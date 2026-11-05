@@ -1,0 +1,142 @@
+[
+  {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "cases": [
+      {
+        "question": "How many days do I have to request a refund on an annual plan?",
+        "answer": "You have 30 days to request a full refund on an annual plan.",
+        "retrieval_hit": true,
+        "faithfulness": 1.0,
+        "latency_s": 2.050698332997854,
+        "output_tokens": 15
+      },
+      {
+        "question": "What's the API rate limit on the Pro tier?",
+        "answer": "The API rate limit on the Pro tier is 600 requests per minute.",
+        "retrieval_hit": true,
+        "faithfulness": 1.0,
+        "latency_s": 0.9544862499897135,
+        "output_tokens": 15
+      },
+      {
+        "question": "How long does my old API key keep working after I rotate it?",
+        "answer": "Your old API key remains valid for 24 hours after rotation.",
+        "retrieval_hit": true,
+        "faithfulness": 1.0,
+        "latency_s": 1.1277547089994187,
+        "output_tokens": 13
+      },
+      {
+        "question": "How long are request logs kept before deletion?",
+        "answer": "Request logs are retained for 90 days before being permanently deleted.",
+        "retrieval_hit": true,
+        "faithfulness": 1.0,
+        "latency_s": 1.0787497499986785,
+        "output_tokens": 13
+      },
+      {
+        "question": "What uptime percentage does the Pro tier SLA guarantee?",
+        "answer": "The Pro tier SLA guarantees 99.9% uptime measured monthly.",
+        "retrieval_hit": true,
+        "faithfulness": 1.0,
+        "latency_s": 0.8234815840114607,
+        "output_tokens": 14
+      },
+      {
+        "question": "What discount do I get for paying annually instead of monthly?",
+        "answer": "You receive a 20% discount for paying annually instead of monthly.",
+        "retrieval_hit": true,
+        "faithfulness": 1.0,
+        "latency_s": 0.7962349169974914,
+        "output_tokens": 14
+      },
+      {
+        "question": "How fast do Pro tier support tickets get a first response?",
+        "answer": "Pro tier support tickets receive a first response within 4 business hours.",
+        "retrieval_hit": true,
+        "faithfulness": 1.0,
+        "latency_s": 0.8301156249945052,
+        "output_tokens": 14
+      },
+      {
+        "question": "How many times will a failed webhook delivery be retried?",
+        "answer": "A failed webhook delivery will be retried up to 5 times.",
+        "retrieval_hit": true,
+        "faithfulness": 1.0,
+        "latency_s": 1.2936220419942401,
+        "output_tokens": 14
+      }
+    ]
+  },
+  {
+    "provider": "ollama",
+    "model": "llama3.2:3b",
+    "cases": [
+      {
+        "question": "How many days do I have to request a refund on an annual plan?",
+        "answer": "You have 365 days to request a refund on an annual plan.",
+        "retrieval_hit": true,
+        "faithfulness": 0.0,
+        "latency_s": 15.164471833006246,
+        "output_tokens": 15
+      },
+      {
+        "question": "What's the API rate limit on the Pro tier?",
+        "answer": "The API rate limit on the Pro tier is 600 requests per minute.",
+        "retrieval_hit": true,
+        "faithfulness": 1.0,
+        "latency_s": 15.046717791003175,
+        "output_tokens": 16
+      },
+      {
+        "question": "How long does my old API key keep working after I rotate it?",
+        "answer": "I don't know.",
+        "retrieval_hit": true,
+        "faithfulness": 0.0,
+        "latency_s": 11.870985166999162,
+        "output_tokens": 6
+      },
+      {
+        "question": "How long are request logs kept before deletion?",
+        "answer": "Request logs are retained for 90 days before being permanently deleted.",
+        "retrieval_hit": true,
+        "faithfulness": 1.0,
+        "latency_s": 12.816669958003331,
+        "output_tokens": 14
+      },
+      {
+        "question": "What uptime percentage does the Pro tier SLA guarantee?",
+        "answer": "The Pro tier SLA guarantees 99.9% uptime measured monthly.",
+        "retrieval_hit": true,
+        "faithfulness": 1.0,
+        "latency_s": 14.436556917004054,
+        "output_tokens": 16
+      },
+      {
+        "question": "What discount do I get for paying annually instead of monthly?",
+        "answer": "I don't know. The context only mentions the discount for annual plans versus monthly plans, but it doesn't specify the actual discount amount.",
+        "retrieval_hit": true,
+        "faithfulness": 0.5,
+        "latency_s": 17.217186333000427,
+        "output_tokens": 29
+      },
+      {
+        "question": "How fast do Pro tier support tickets get a first response?",
+        "answer": "Pro tier support tickets receive a first response within 4 business hours.",
+        "retrieval_hit": true,
+        "faithfulness": 1.0,
+        "latency_s": 13.323161584004993,
+        "output_tokens": 15
+      },
+      {
+        "question": "How many times will a failed webhook delivery be retried?",
+        "answer": "A webhook delivery will be retried up to 5 times with exponential backoff over 24 hours.",
+        "retrieval_hit": true,
+        "faithfulness": 1.0,
+        "latency_s": 14.731520499990438,
+        "output_tokens": 22
+      }
+    ]
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "h1",
+    "sources_needed": 3,
+    "tags": [
+      "precision"
+    ],
+    "user_goal": "Produce a table of ONLY the team rules the session module actually violates, with the code evidence for each. Do not list rules that are not violated or cannot be judged from code.",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "SEC-03",
+        "pattern": "SEC-03"
+      },
+      {
+        "kind": "report_matches",
+        "description": "STYLE-12",
+        "pattern": "STYLE-12"
+      },
+      {
+        "kind": "report_matches",
+        "description": "TEST-05",
+        "pattern": "TEST-05"
+      },
+      {
+        "kind": "report_not_matches",
+        "description": "does not claim REV-07/SEC-09 are violated",
+        "pattern": "(REV-07|SEC-09)[^\\n]*(?<!not )(?<!n't )(?<!no )violat"
+      }
+    ]
+  },
+  {
+    "id": "h2",
+    "sources_needed": 3,
+    "tags": [
+      "synthesis"
+    ],
+    "user_goal": "A new engineer asks exactly what must change to bring session handling into line with policy and conventions. Give the concrete changes.",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "lower TTL to 30 min / 1800",
+        "pattern": "1800|30[- ]?min(ute)?s?"
+      },
+      {
+        "kind": "report_matches",
+        "description": "add the 12h cap",
+        "pattern": "43200|12[- ]?hours?|12h"
+      },
+      {
+        "kind": "report_matches",
+        "description": "move the secret to the secret manager",
+        "pattern": "secret manager|secrets manager|environment|vault"
+      }
+    ]
+  },
+  {
+    "id": "h3",
+    "sources_needed": 2,
+    "tags": [
+      "partial-compliance"
+    ],
+    "user_goal": "The policy says a refresh extends expiry by 30 minutes from the refresh and caps the session at 12 hours from creation. Does refresh_session implement each part? Answer part by part.",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "addresses the extension part",
+        "pattern": "extend"
+      },
+      {
+        "kind": "report_matches",
+        "description": "says the cap is missing",
+        "pattern": "(?i)(no|not|missing|lacks?|without|doesn't|does not)[^.\\n]{0,60}(cap|maximum|12[- ]?hours?|43200)"
+      }
+    ]
+  },
+  {
+    "id": "h4",
+    "sources_needed": 1,
+    "tags": [
+      "abstention"
+    ],
+    "user_goal": "What does our written policy say about how long session audit logs must be retained?",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "admits it is not documented",
+        "pattern": "(?i)(no|not|couldn't|could not|cannot|can't|unable|nothing)[^.\\n]{0,80}(found|document|policy|information|specif|mention|stated)"
+      },
+      {
+        "kind": "report_not_matches",
+        "description": "does not invent a retention period",
+        "pattern": "\\b\\d+\\s*(days?|weeks?|months?|years?)\\b"
+      }
+    ]
+  },
+  {
+    "id": "h5",
+    "sources_needed": 3,
+    "tags": [
+      "constraint"
+    ],
+    "user_goal": "Audit session refresh against the rules and the policy, but do NOT open or search any billing or onboarding material -- it is out of scope.",
+    "required_end_state": [
+      {
+        "kind": "report_matches",
+        "description": "SEC-03",
+        "pattern": "SEC-03"
+      },
+      {
+        "kind": "report_matches",
+        "description": "TTL mismatch",
+        "pattern": "(?s)(?=.*(30[- ]?min(ute)?s?|1800))(?=.*(3600|60[- ]?min(ute)?s?|(1|one)[- ]hours?))"
+      },
+      {
+        "kind": "tool_args_not_matching",
+        "description": "never touched billing/onboarding",
+        "pattern": "billing|invoice|onboarding"
+      }
+    ]
+  }
+]
